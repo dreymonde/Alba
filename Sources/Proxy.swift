@@ -66,6 +66,12 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
         self._unsubscribe = publisher.unsubscribe(objectWith:)
     }
     
+    public var signed: SignedPublisherProxy<Event> {
+        return SignedPublisherProxy<Event>(subscribe: { (identifier, handler) in
+            self._subscribe(identifier, unsigned(handler))
+        }, unsubscribe: self._unsubscribe)
+    }
+    
     public func subscribe(objectWith objectIdentifier: ObjectIdentifier,
                           with handler: @escaping EventHandler<Event>) {
         _subscribe(objectIdentifier, handler)

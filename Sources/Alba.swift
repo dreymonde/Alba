@@ -30,3 +30,7 @@ public typealias SignedEventHandler<Event> = (Event, ObjectIdentifier?) -> ()
 internal func signed<Event>(_ eventHandler: @escaping EventHandler<Event>) -> SignedEventHandler<Event> {
     return { eventHandler($0.0) }
 }
+
+internal func unsigned<Event>(_ eventHandler: @escaping SignedEventHandler<Event>) -> EventHandler<Event> {
+    return { eventHandler($0, nil) }
+}
