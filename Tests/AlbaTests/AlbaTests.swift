@@ -167,4 +167,23 @@ class AlbaTests: XCTestCase {
         XCTAssertEqual(str, "1234-410010")
     }
     
+    func testRedirect() {
+        let pubOne = BasicPublisher<Int>()
+        let pubTwo = BasicPublisher<String>()
+        let expectation = self.expectation(description: "onsubtwo")
+        pubOne.proxy
+            .map({ $0 - 1 })
+            .map(String.init)
+            .redirect(to: pubTwo)
+        let subTwo = BasicListener<String>(subscribingTo: pubTwo) { number in
+            debugPrint(number)
+            if number == "10" { expectation.fulfill() }
+        }
+        print(subTwo)
+        pubOne.publish(3)
+        pubOne.publish(5)
+        pubOne.publish(11)
+        waitForExpectations(timeout: 5.0)
+    }
+    
 }
