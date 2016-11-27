@@ -71,3 +71,62 @@ public class BasicSignedListener<Event> {
     }
     
 }
+
+internal class NotGoingBasicListener<Event> {
+    
+    let publisher: PublisherProxy<Event>
+    let handler: EventHandler<Event>
+    
+    init(subscribingTo publisher: PublisherProxy<Event>,
+         _ handler: @escaping EventHandler<Event>) {
+        self.publisher = publisher
+        self.handler = handler
+        publisher.subscribe(self, with: self.handle)
+    }
+    
+    init<Pub : Publisher>(subscribingTo publisher: Pub,
+         _ handler: @escaping EventHandler<Event>) where Pub.Event == Event {
+        self.publisher = publisher.proxy
+        self.handler = handler
+        self.publisher.subscribe(self, with: self.handle)
+    }
+    
+    func handle(_ event: Event) {
+        self.handler(event)
+    }
+    
+    deinit {
+        publisher.unsubscribe(self)
+    }
+    
+}
+
+internal class NotGoingBasicSignedListener<Event> {
+    
+    let publisher: SignedPublisherProxy<Event>
+    let handler: SignedEventHandler<Event>
+    
+    init(subscribingTo publisher: SignedPublisherProxy<Event>,
+         _ handler: @escaping SignedEventHandler<Event>) {
+        self.publisher = publisher
+        self.handler = handler
+        publisher.subscribe(self, with: self.handle)
+    }
+    
+    init<Pub : SignedPublisher>(subscribingTo publisher: Pub,
+         _ handler: @escaping SignedEventHandler<Event>) where Pub.Event == Event {
+        self.publisher = publisher.proxy
+        self.handler = handler
+        self.publisher.subscribe(self, with: self.handle)
+    }
+    
+    func handle(_ event: Event, identifier: ObjectIdentifier?) {
+        self.handler(event, identifier)
+    }
+    
+    deinit {
+        publisher.unsubscribe(self)
+    }
+    
+}
+

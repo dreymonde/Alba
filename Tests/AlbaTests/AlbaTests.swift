@@ -203,4 +203,14 @@ class AlbaTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
     }
     
+    func testListen() {
+        let pub = BasicPublisher<Int>()
+        let expectation = self.expectation(description: "onlis")
+        pub.proxy.listen { (number) in
+            if number == 10 { expectation.fulfill() }
+        }
+        [0, 3, 4, -1, 5, 10].forEach(pub.publish)
+        waitForExpectations(timeout: 5.0)
+    }
+    
 }
