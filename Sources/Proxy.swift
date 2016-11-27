@@ -120,6 +120,12 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
         }, unsubscribe: self._unsubscribe)
     }
     
+    public func interrupted(with work: @escaping (Event) -> ()) -> PublisherProxy<Event> {
+        return PublisherProxy<Event>(subscribe: { (identifier, handle) in
+            self._subscribe(identifier, { work($0); handle($0) })
+        }, unsubscribe: self._unsubscribe)
+    }
+    
     public func redirect<Pub : Publisher>(to publisher: Pub) where Pub.Event == Event {
         subscribe(publisher, with: Pub.publish)
     }
@@ -200,6 +206,12 @@ public struct SignedPublisherProxy<Event> : PublisherProxyProtocol {
                 if let transformed = transform(event.0) { handle(transformed, event.1) }
             }
             self._subscribe(identifier, handler)
+        }, unsubscribe: self._unsubscribe)
+    }
+    
+    public func interrupted(with work: @escaping (Event) -> ()) -> SignedPublisherProxy<Event> {
+        return SignedPublisherProxy<Event>(subscribe: { (identifier, handle) in
+            self._subscribe(identifier, { work($0.0); handle($0.0, $0.1) })
         }, unsubscribe: self._unsubscribe)
     }
     

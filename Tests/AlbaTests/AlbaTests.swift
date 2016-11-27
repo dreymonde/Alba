@@ -186,4 +186,21 @@ class AlbaTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
     }
     
+    func testIntercept() {
+        let pub = BasicPublisher<Int>()
+        let expectation = self.expectation(description: "onsub")
+        let proxy = pub.proxy
+            .interrupted(with: {
+                if $0 == 10 { expectation.fulfill() }
+            })
+        let sub = BasicListener<Int>(subscribingTo: proxy) { number in
+            print("Yay")
+        }
+        print(sub)
+        pub.publish(5)
+        pub.publish(7)
+        pub.publish(10)
+        waitForExpectations(timeout: 5.0)
+    }
+    
 }
