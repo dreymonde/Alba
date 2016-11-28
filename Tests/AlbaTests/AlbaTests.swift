@@ -24,18 +24,17 @@
 
 import Foundation
 import XCTest
-import Alba
+@testable import Alba
 
 class AlbaTests: XCTestCase {
     
     func testSimplest() {
         let pub = BasicPublisher<Int>()
         let expectation = self.expectation(description: "On Sub")
-        let sub = BasicListener(subscribingTo: pub) { number in
+        pub.proxy.listen { (number) in
             XCTAssertEqual(number, 5)
             expectation.fulfill()
         }
-        print(sub)
         pub.publish(5)
         waitForExpectations(timeout: 5.0)
     }
@@ -51,7 +50,6 @@ class AlbaTests: XCTestCase {
                 expectation.fulfill()
             }
         }
-        print(sub)
         pub.publish(5, submittedBy: sub)
         pub.publish(7, submittedBy: nil)
         waitForExpectations(timeout: 5.0)
@@ -118,11 +116,10 @@ class AlbaTests: XCTestCase {
         let pub = BasicPublisher<Int>()
         let pospub = pub.proxy.filter({ $0 > 0 })
         let expectation = self.expectation(description: "on sub")
-        let sub = BasicListener<Int>(subscribingTo: pospub) { number in
-            XCTAssertTrue(number > 0)
+        pospub.listen { (number) in
+            XCTAssertGreaterThan(number, 0)
             if number == 10 { expectation.fulfill() }
         }
-        print(sub)
         [-1, -3, 5, 7, 9, 4, 3, -2, 0, 10].forEach(pub.publish)
         waitForExpectations(timeout: 5.0)
     }
@@ -131,11 +128,10 @@ class AlbaTests: XCTestCase {
         let pub = BasicPublisher<Int>()
         let strpub = pub.proxy.map(String.init)
         let expectation = self.expectation(description: "onsub")
-        let sub = BasicListener<String>(subscribingTo: strpub) { string in
+        strpub.listen { (string) in
             debugPrint(string)
             if string == "10" { expectation.fulfill() }
         }
-        print(sub)
         [-1, 2, 3, 9, 7, 4, 2, 57, 10].forEach(pub.publish)
         waitForExpectations(timeout: 5.0)
     }
@@ -144,10 +140,9 @@ class AlbaTests: XCTestCase {
         let pub = BasicPublisher<String>()
         let intpub = pub.proxy.flatMap({ Int($0) })
         let expectation = self.expectation(description: "onsub")
-        let sub = BasicListener<Int>(subscribingTo: intpub) { int in
-            if int == 10 { expectation.fulfill() }
+        intpub.listen { (number) in
+            if number == 10 { expectation.fulfill() }
         }
-        print(sub)
         ["Abba", "Babbaa", "-7", "3", "10"].forEach(pub.publish)
         waitForExpectations(timeout: 5.0)
     }
@@ -156,12 +151,10 @@ class AlbaTests: XCTestCase {
         var obsInt = Observable(5)
         let expectation = self.expectation(description: "onsub")
         var str = ""
-        let sub = BasicListener<Int>(subscribingTo: obsInt.proxy) {
-            int in
+        obsInt.proxy.listen { (int) in
             str.append(String(int))
             if int == 10 { expectation.fulfill() }
         }
-        print(sub)
         [1, 2, 3, 4, -4, 100, 10].forEach({ obsInt.value = $0 })
         waitForExpectations(timeout: 5.0)
         XCTAssertEqual(str, "1234-410010")
@@ -175,11 +168,10 @@ class AlbaTests: XCTestCase {
             .map({ $0 - 1 })
             .map(String.init)
             .redirect(to: pubTwo)
-        let subTwo = BasicListener<String>(subscribingTo: pubTwo) { number in
+        pubTwo.proxy.listen { (number) in
             debugPrint(number)
             if number == "10" { expectation.fulfill() }
         }
-        print(subTwo)
         pubOne.publish(3)
         pubOne.publish(5)
         pubOne.publish(11)
@@ -193,10 +185,9 @@ class AlbaTests: XCTestCase {
             .interrupted(with: {
                 if $0 == 10 { expectation.fulfill() }
             })
-        let sub = BasicListener<Int>(subscribingTo: proxy) { number in
+        proxy.listen { (_) in
             print("Yay")
         }
-        print(sub)
         pub.publish(5)
         pub.publish(7)
         pub.publish(10)
