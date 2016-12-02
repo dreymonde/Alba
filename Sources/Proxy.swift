@@ -130,7 +130,7 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
         subscribe(publisher, with: Pub.publish)
     }
     
-    internal func listen(with handler: @escaping EventHandler<Event>) {
+    public func listen(with handler: @escaping EventHandler<Event>) {
         _ = NotGoingBasicListener<Event>(subscribingTo: self, handler)
     }
     
@@ -223,7 +223,7 @@ public struct SignedPublisherProxy<Event> : PublisherProxyProtocol {
         subscribe(publisher, with: Pub.publish)
     }
     
-    internal func listen(with handler: @escaping SignedEventHandler<Event>) {
+    public func listen(with handler: @escaping SignedEventHandler<Event>) {
         _ = NotGoingBasicSignedListener<Event>(subscribingTo: self, handler)
     }
     
