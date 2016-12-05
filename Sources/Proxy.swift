@@ -244,3 +244,21 @@ public extension SignedPublisher {
     }
     
 }
+
+public extension PublisherProxy {
+    
+    static func empty() -> PublisherProxy<Event> {
+        return PublisherProxy<Event>(subscribe: { _ in },
+                                     unsubscribe: { _ in })
+    }
+    
+}
+
+public extension SignedPublisherProxy {
+    
+    static func empty() -> SignedPublisherProxy<Event> {
+        return SignedPublisherProxy<Event>(subscribe: { _ in },
+                                           unsubscribe: { _ in })
+    }
+    
+}
