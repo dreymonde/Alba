@@ -29,7 +29,7 @@ import XCTest
 class AlbaTests: XCTestCase {
     
     func testSimplest() {
-        let pub = BasicPublisher<Int>()
+        let pub = Publisher<Int>()
         let expectation = self.expectation(description: "On Sub")
         pub.proxy.listen { (number) in
             XCTAssertEqual(number, 5)
@@ -40,7 +40,7 @@ class AlbaTests: XCTestCase {
     }
     
     func testSigned() {
-        let pub = BasicSignedPublisher<Int>()
+        let pub = SignedPublisher<Int>()
         let expectation = self.expectation(description: "On sub")
         let sub = BasicSignedListener(subscribingTo: pub) { (number, _) in
             if number == 5 {
@@ -85,8 +85,8 @@ class AlbaTests: XCTestCase {
     }
     
     func testDealloc() {
-        let pub = BasicPublisher<Int>()
-        let spub = BasicSignedPublisher<Int>()
+        let pub = Publisher<Int>()
+        let spub = SignedPublisher<Int>()
         let expectation = self.expectation(description: "Deinit wait")
         var dea: DEA? = DEA.init(proxy: pub.proxy, sproxy: spub.proxy, deinitBlock: { expectation.fulfill() })
         print(dea!)
@@ -99,8 +99,8 @@ class AlbaTests: XCTestCase {
     }
     
     func testDealloc2() {
-        let pub = BasicPublisher<Int>()
-        let spub = BasicSignedPublisher<Int>()
+        let pub = Publisher<Int>()
+        let spub = SignedPublisher<Int>()
         let expectation = self.expectation(description: "Deinit wait")
         var dea: DEA? = DEA.init(proxy: pub.proxy, sproxy: spub.proxy, signed: true, deinitBlock: { expectation.fulfill() })
         print(dea!)
@@ -113,7 +113,7 @@ class AlbaTests: XCTestCase {
     }
     
     func testFilter() {
-        let pub = BasicPublisher<Int>()
+        let pub = Publisher<Int>()
         let pospub = pub.proxy.filter({ $0 > 0 })
         let expectation = self.expectation(description: "on sub")
         pospub.listen { (number) in
@@ -125,7 +125,7 @@ class AlbaTests: XCTestCase {
     }
     
     func testMap() {
-        let pub = BasicPublisher<Int>()
+        let pub = Publisher<Int>()
         let strpub = pub.proxy.map(String.init)
         let expectation = self.expectation(description: "onsub")
         strpub.listen { (string) in
@@ -137,7 +137,7 @@ class AlbaTests: XCTestCase {
     }
     
     func testFlatMap() {
-        let pub = BasicPublisher<String>()
+        let pub = Publisher<String>()
         let intpub = pub.proxy.flatMap({ Int($0) })
         let expectation = self.expectation(description: "onsub")
         intpub.listen { (number) in
@@ -161,8 +161,8 @@ class AlbaTests: XCTestCase {
     }
     
     func testRedirect() {
-        let pubOne = BasicPublisher<Int>()
-        let pubTwo = BasicPublisher<String>()
+        let pubOne = Publisher<Int>()
+        let pubTwo = Publisher<String>()
         let expectation = self.expectation(description: "onsubtwo")
         pubOne.proxy
             .map({ $0 - 1 })
@@ -179,7 +179,7 @@ class AlbaTests: XCTestCase {
     }
     
     func testIntercept() {
-        let pub = BasicPublisher<Int>()
+        let pub = Publisher<Int>()
         let expectation = self.expectation(description: "onsub")
         let proxy = pub.proxy
             .interrupted(with: {
@@ -195,7 +195,7 @@ class AlbaTests: XCTestCase {
     }
     
     func testListen() {
-        let pub = BasicPublisher<Int>()
+        let pub = Publisher<Int>()
         let expectation = self.expectation(description: "onlis")
         pub.proxy.listen { (number) in
             if number == 10 { expectation.fulfill() }

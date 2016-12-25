@@ -30,7 +30,7 @@ public struct Observable<Value> {
         }
     }
     
-    fileprivate let publisher = BasicPublisher<Value>()
+    fileprivate let publisher = Publisher<Value>()
     public let proxy: PublisherProxy<Value>
     
     public init(_ value: Value) {

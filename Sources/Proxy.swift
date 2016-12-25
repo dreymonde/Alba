@@ -56,12 +56,12 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
         self._unsubscribe = unsubscribe
     }
     
-    public init<Pub : Publisher>(_ publisher: Pub) where Pub.Event == Event {
+    public init<Pub : PublisherProtocol>(_ publisher: Pub) where Pub.Event == Event {
         self._subscribe = { [weak publisher] in publisher?.subscribe(objectWith: $0, with: $1) }
         self._unsubscribe = { [weak publisher] in publisher?.unsubscribe(objectWith: $0) }
     }
     
-    public init<Pub : Publisher>(strong publisher: Pub) where Pub.Event == Event {
+    public init<Pub : PublisherProtocol>(strong publisher: Pub) where Pub.Event == Event {
         self._subscribe = publisher.subscribe(objectWith:with:)
         self._unsubscribe = publisher.unsubscribe(objectWith:)
     }
@@ -126,7 +126,7 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
         }, unsubscribe: self._unsubscribe)
     }
     
-    public func redirect<Pub : Publisher>(to publisher: Pub) where Pub.Event == Event {
+    public func redirect<Pub : PublisherProtocol>(to publisher: Pub) where Pub.Event == Event {
         subscribe(publisher, with: Pub.publish)
     }
     
@@ -149,12 +149,12 @@ public struct SignedPublisherProxy<Event> : PublisherProxyProtocol {
         self._unsubscribe = unsubscribe
     }
     
-    public init<Pub : SignedPublisher>(_ publisher: Pub) where Pub.Event == Event {
+    public init<Pub : SignedPublisherProtocol>(_ publisher: Pub) where Pub.Event == Event {
         self._subscribe = { [weak publisher] in publisher?.subscribe(objectWith: $0, with: $1) }
         self._unsubscribe = { [weak publisher] in publisher?.unsubscribe(objectWith: $0) }
     }
     
-    public init<Pub : SignedPublisher>(strong publisher: Pub) where Pub.Event == Event {
+    public init<Pub : SignedPublisherProtocol>(strong publisher: Pub) where Pub.Event == Event {
         self._subscribe = publisher.subscribe(objectWith:with:)
         self._unsubscribe = publisher.unsubscribe(objectWith:)
     }
@@ -219,7 +219,7 @@ public struct SignedPublisherProxy<Event> : PublisherProxyProtocol {
         }, unsubscribe: self._unsubscribe)
     }
     
-    public func redirect<Pub : SignedPublisher>(to publisher: Pub) where Pub.Event == Event {
+    public func redirect<Pub : SignedPublisherProtocol>(to publisher: Pub) where Pub.Event == Event {
         subscribe(publisher, with: Pub.publish)
     }
     
@@ -229,7 +229,7 @@ public struct SignedPublisherProxy<Event> : PublisherProxyProtocol {
     
 }
 
-public extension Publisher {
+public extension PublisherProtocol {
     
     var proxy: PublisherProxy<Event> {
         return PublisherProxy(self)
@@ -237,7 +237,7 @@ public extension Publisher {
     
 }
 
-public extension SignedPublisher {
+public extension SignedPublisherProtocol {
     
     var proxy: SignedPublisherProxy<Event> {
         return SignedPublisherProxy(self)

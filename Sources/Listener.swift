@@ -34,7 +34,7 @@ public class BasicListener<Event> {
         publisher.subscribe(self, with: handler)
     }
     
-    public init<Pub : Publisher>(subscribingTo publisher: Pub,
+    public init<Pub : PublisherProtocol>(subscribingTo publisher: Pub,
                 _ handler: @escaping EventHandler<Event>) where Pub.Event == Event {
         self.publisher = publisher.proxy
         self.handler = handler
@@ -59,7 +59,7 @@ public class BasicSignedListener<Event> {
         publisher.subscribe(self, with: handler)
     }
     
-    public init<Pub : SignedPublisher>(subscribingTo publisher: Pub,
+    public init<Pub : SignedPublisherProtocol>(subscribingTo publisher: Pub,
                 _ handler: @escaping SignedEventHandler<Event>) where Pub.Event == Event {
         self.publisher = publisher.proxy
         self.handler = handler
@@ -84,7 +84,7 @@ internal class NotGoingBasicListener<Event> {
         publisher.subscribe(self, with: self.handle)
     }
     
-    init<Pub : Publisher>(subscribingTo publisher: Pub,
+    init<Pub : PublisherProtocol>(subscribingTo publisher: Pub,
          _ handler: @escaping EventHandler<Event>) where Pub.Event == Event {
         self.publisher = publisher.proxy
         self.handler = handler
@@ -113,7 +113,7 @@ internal class NotGoingBasicSignedListener<Event> {
         publisher.subscribe(self, with: self.handle)
     }
     
-    init<Pub : SignedPublisher>(subscribingTo publisher: Pub,
+    init<Pub : SignedPublisherProtocol>(subscribingTo publisher: Pub,
          _ handler: @escaping SignedEventHandler<Event>) where Pub.Event == Event {
         self.publisher = publisher.proxy
         self.handler = handler

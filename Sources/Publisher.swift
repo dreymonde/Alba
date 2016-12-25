@@ -50,7 +50,7 @@ public extension Subscribable {
     
 }
 
-public protocol Publisher : class, Subscribable {
+public protocol PublisherProtocol : class, Subscribable {
     
     typealias Subscription = EventHandler<Event>
     
@@ -62,7 +62,7 @@ public protocol Publisher : class, Subscribable {
     
 }
 
-public extension Publisher {
+public extension PublisherProtocol {
     
     func publish(_ event: Event) {
         subscribers.values.forEach({ handle in handle(event) })
@@ -70,7 +70,7 @@ public extension Publisher {
     
 }
 
-public protocol SignedPublisher : class, Subscribable {
+public protocol SignedPublisherProtocol : class, Subscribable {
     
     typealias Subscription = SignedEventHandler<Event>
     
@@ -82,7 +82,7 @@ public protocol SignedPublisher : class, Subscribable {
     
 }
 
-public extension SignedPublisher {
+public extension SignedPublisherProtocol {
     
     func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
         subscribers.forEach { (subcriberIdentifier, handler) in
@@ -98,7 +98,7 @@ public extension SignedPublisher {
         
 }
 
-public class BasicPublisher<Event> : Publisher {
+public class Publisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Event>] = [:]
     
@@ -106,7 +106,7 @@ public class BasicPublisher<Event> : Publisher {
     
 }
 
-public class BasicSignedPublisher<Event> : SignedPublisher {
+public class SignedPublisher<Event> : SignedPublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : SignedEventHandler<Event>] = [:]
 
