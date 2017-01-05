@@ -84,7 +84,7 @@ public class SignedPublisher<Event> : PublisherProtocol {
 
     public init() { }
     
-    func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
+    public func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
         subscribers.forEach { (subcriberIdentifier, handler) in
             if subcriberIdentifier != submitterIdentifier {
                 handler(.init(event, submitterIdentifier))
@@ -92,7 +92,7 @@ public class SignedPublisher<Event> : PublisherProtocol {
         }
     }
     
-    func publish(_ event: Event, submittedBy submitter: AnyObject?) {
+    public func publish(_ event: Event, submittedBy submitter: AnyObject?) {
         publish(event, submitterIdentifier: submitter.map(ObjectIdentifier.init))
     }
     
