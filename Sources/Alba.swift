@@ -25,12 +25,25 @@
 // Alba - stateful event observing engine
 
 public typealias EventHandler<Event> = (Event) -> ()
-public typealias SignedEventHandler<Event> = (Event, ObjectIdentifier?) -> ()
 
-internal func signed<Event>(_ eventHandler: @escaping EventHandler<Event>) -> SignedEventHandler<Event> {
-    return { eventHandler($0.0) }
+public struct _Wrapper<Value, Field> {
+    public var value: Value
+    public var field: Field
+    
+    public func map<T>(_ transform: (Value) -> T) -> _Wrapper<T, Field> {
+        return _Wrapper<T, Field>(value: transform(self.value), field: self.field)
+    }
+    
 }
 
-internal func unsigned<Event>(_ eventHandler: @escaping SignedEventHandler<Event>) -> EventHandler<Event> {
-    return { eventHandler($0, nil) }
+public protocol Wrapper {
+    
+    associatedtype Wrapped
+    associatedtype Field
+    
+    var value: Wrapped { get set }
+    
+    func _wrapper() -> _Wrapper<Wrapped, Field>
+    init(_wrapper: _Wrapper<Wrapped, Field>)
+    
 }

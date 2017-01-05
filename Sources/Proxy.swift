@@ -66,11 +66,11 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
         self._unsubscribe = publisher.unsubscribe(objectWith:)
     }
     
-    public var signed: SignedPublisherProxy<Event> {
-        return SignedPublisherProxy<Event>(subscribe: { (identifier, handler) in
-            self._subscribe(identifier, unsigned(handler))
-        }, unsubscribe: self._unsubscribe)
-    }
+//    public var signed: SignedPublisherProxy<Event> {
+//        return SignedPublisherProxy<Event>(subscribe: { (identifier, handler) in
+//            self._subscribe(identifier, unsigned(handler))
+//        }, unsubscribe: self._unsubscribe)
+//    }
     
     public func subscribe(objectWith objectIdentifier: ObjectIdentifier,
                           with handler: @escaping EventHandler<Event>) {
@@ -136,95 +136,57 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
     
 }
 
-public struct SignedPublisherProxy<Event> : PublisherProxyProtocol {
-    
-    public typealias Subscription = SignedEventHandler<Event>
-    
-    fileprivate let _subscribe: (ObjectIdentifier, @escaping SignedEventHandler<Event>) -> ()
-    fileprivate let _unsubscribe: (ObjectIdentifier) -> ()
-    
-    public init(subscribe: @escaping (ObjectIdentifier, @escaping SignedEventHandler<Event>) -> (),
-                unsubscribe: @escaping (ObjectIdentifier) -> ()) {
-        self._subscribe = subscribe
-        self._unsubscribe = unsubscribe
-    }
-    
-    public init<Pub : SignedPublisherProtocol>(_ publisher: Pub) where Pub.Event == Event {
-        self._subscribe = { [weak publisher] in publisher?.subscribe(objectWith: $0, with: $1) }
-        self._unsubscribe = { [weak publisher] in publisher?.unsubscribe(objectWith: $0) }
-    }
-    
-    public init<Pub : SignedPublisherProtocol>(strong publisher: Pub) where Pub.Event == Event {
-        self._subscribe = publisher.subscribe(objectWith:with:)
-        self._unsubscribe = publisher.unsubscribe(objectWith:)
-    }
-    
-    public var unsigned: PublisherProxy<Event> {
-        return PublisherProxy<Event>(subscribe: { (identifier, handler) in
-            self._subscribe(identifier, signed(handler))
-        }, unsubscribe: self._unsubscribe)
-    }
-    
-    public func subscribe(objectWith objectIdentifier: ObjectIdentifier,
-                          with handler: @escaping SignedEventHandler<Event>) {
-        _subscribe(objectIdentifier, handler)
-    }
+public extension PublisherProxy where Event : Wrapper {
     
     public func subscribe<Object : AnyObject>(_ object: Object,
-                          with producer: @escaping (Object) -> SignedEventHandler<Event>) {
-        let subID = ObjectIdentifier(object)
-        self.subscribe(objectWith: subID, with: { [weak object] (event, objectIdentifier) in
+                          with producer: @escaping (Object) -> EventHandler<(Event.Wrapped, Event.Field)>) {
+        let identifier = ObjectIdentifier(object)
+        self.subscribe(objectWith: identifier, with: { [weak object] event in
             if let object = object {
-                producer(object)(event, objectIdentifier)
+                let handler = producer(object)
+                let wrapper = event._wrapper()
+                handler(wrapper.value, wrapper.field)
             } else {
-                self.unsubscribe(objectWith: subID)
+                self.unsubscribe(objectWith: identifier)
             }
         })
     }
     
-    public func unsubscribe(objectWith objectIdentifier: ObjectIdentifier) {
-        _unsubscribe(objectIdentifier)
-    }
-    
-    public func filter(_ condition: @escaping (Event) -> Bool) -> SignedPublisherProxy<Event> {
-        return SignedPublisherProxy<Event>(subscribe: { (identifier, handle) in
-            let handler: SignedEventHandler<Event> = { event in
-                if condition(event.0) { handle(event.0, event.1) }
+    func filterValue(_ condition: @escaping (Event.Wrapped) -> Bool) -> PublisherProxy<Event> {
+        return PublisherProxy<Event>(subscribe: { (identifier, handle) in
+            let handler: EventHandler<Event> = { event in
+                if condition(event.value) { handle(event) }
             }
             self._subscribe(identifier, handler)
         }, unsubscribe: self._unsubscribe)
     }
     
-    public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> SignedPublisherProxy<OtherEvent> {
-        return SignedPublisherProxy<OtherEvent>(subscribe: { (identifier, handle) in
-            let handler: SignedEventHandler<Event> = { event in
-                handle(transform(event.0), event.1)
+    func mapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent.Wrapped) -> PublisherProxy<OtherEvent> where OtherEvent : Wrapper, OtherEvent.Field == Event.Field {
+        return PublisherProxy<OtherEvent>(subscribe: { (identifier, handle) in
+            let handler: EventHandler<Event> = { event in
+                let wr = event._wrapper().map(transform)
+                let newEvent = OtherEvent.init(_wrapper: wr)
+                handle(newEvent)
             }
             self._subscribe(identifier, handler)
         }, unsubscribe: self._unsubscribe)
     }
     
-    public func flatMap<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent?) -> SignedPublisherProxy<OtherEvent> {
-        return SignedPublisherProxy<OtherEvent>(subscribe: { (identifier, handle) in
-            let handler: SignedEventHandler<Event> = { event in
-                if let transformed = transform(event.0) { handle(transformed, event.1) }
+    func flatMapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent.Wrapped?) -> PublisherProxy<OtherEvent> where OtherEvent : Wrapper, OtherEvent.Field == Event.Field {
+        return PublisherProxy<OtherEvent>(subscribe: { (identifier, handle) in
+            let handler: EventHandler<Event> = { event in
+                if let newValue = transform(event.value) {
+                    let wr = _Wrapper(value: newValue, field: event._wrapper().field)
+                    let newEvent = OtherEvent.init(_wrapper: wr)
+                    handle(newEvent)
+                }
             }
             self._subscribe(identifier, handler)
         }, unsubscribe: self._unsubscribe)
     }
     
-    public func interrupted(with work: @escaping (Event) -> ()) -> SignedPublisherProxy<Event> {
-        return SignedPublisherProxy<Event>(subscribe: { (identifier, handle) in
-            self._subscribe(identifier, { work($0.0); handle($0.0, $0.1) })
-        }, unsubscribe: self._unsubscribe)
-    }
-    
-    public func redirect<Pub : SignedPublisherProtocol>(to publisher: Pub) where Pub.Event == Event {
-        subscribe(publisher, with: Pub.publish)
-    }
-    
-    public func listen(with handler: @escaping SignedEventHandler<Event>) {
-        _ = NotGoingBasicSignedListener<Event>(subscribingTo: self, handler)
+    var valueOnly: PublisherProxy<Event.Wrapped> {
+        return self.map({ $0.value })
     }
     
 }
@@ -233,14 +195,6 @@ public extension PublisherProtocol {
     
     var proxy: PublisherProxy<Event> {
         return PublisherProxy(self)
-    }
-    
-}
-
-public extension SignedPublisherProtocol {
-    
-    var proxy: SignedPublisherProxy<Event> {
-        return SignedPublisherProxy(self)
     }
     
 }
@@ -254,11 +208,4 @@ public extension PublisherProxy {
     
 }
 
-public extension SignedPublisherProxy {
-    
-    static func empty() -> SignedPublisherProxy<Event> {
-        return SignedPublisherProxy<Event>(subscribe: { _ in },
-                                           unsubscribe: { _ in })
-    }
-    
-}
+public typealias SignedPublisherProxy<Event> = PublisherProxy<Signed<Event>>

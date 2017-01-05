@@ -42,11 +42,11 @@ class AlbaTests: XCTestCase {
     func testSigned() {
         let pub = SignedPublisher<Int>()
         let expectation = self.expectation(description: "On sub")
-        let sub = BasicSignedListener(subscribingTo: pub) { (number, _) in
-            if number == 5 {
+        let sub = BasicListener(subscribingTo: pub) { (number) in
+            if number.value == 5 {
                 XCTFail()
             }
-            if number == 7 {
+            if number.value == 7 {
                 expectation.fulfill()
             }
         }
@@ -67,7 +67,7 @@ class AlbaTests: XCTestCase {
             if signed {
                 sproxy.subscribe(self, with: DEA.handleSigned)
             } else {
-                sproxy.unsigned.subscribe(self, with: DEA.handle)
+                sproxy.valueOnly.subscribe(self, with: DEA.handle)
             }
         }
         deinit {

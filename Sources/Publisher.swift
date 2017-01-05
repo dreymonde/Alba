@@ -70,34 +70,6 @@ public extension PublisherProtocol {
     
 }
 
-public protocol SignedPublisherProtocol : class, Subscribable {
-    
-    typealias Subscription = SignedEventHandler<Event>
-    
-    associatedtype Event
-    
-    var subscribers: [ObjectIdentifier : SignedEventHandler<Event>] { get set }
-    
-    func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?)
-    
-}
-
-public extension SignedPublisherProtocol {
-    
-    func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
-        subscribers.forEach { (subcriberIdentifier, handler) in
-            if subcriberIdentifier != submitterIdentifier {
-                handler(event, submitterIdentifier)
-            }
-        }
-    }
-    
-    func publish(_ event: Event, submittedBy submitter: AnyObject?) {
-        publish(event, submitterIdentifier: submitter.map(ObjectIdentifier.init))
-    }
-        
-}
-
 public class Publisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Event>] = [:]
@@ -106,10 +78,46 @@ public class Publisher<Event> : PublisherProtocol {
     
 }
 
-public class SignedPublisher<Event> : SignedPublisherProtocol {
+public struct Signed<Event> : Wrapper {
+    public var value: Event
+    public let submittedBy: ObjectIdentifier?
     
-    public var subscribers: [ObjectIdentifier : SignedEventHandler<Event>] = [:]
+    public init(_ value: Event, submittedBy: ObjectIdentifier?) {
+        self.value = value
+        self.submittedBy = submittedBy
+    }
+    
+    public init(_ value: Event, _ submittedBy: ObjectIdentifier?) {
+        self.value = value
+        self.submittedBy = submittedBy
+    }
+    
+    public func _wrapper() -> _Wrapper<Event, ObjectIdentifier?> {
+        return _Wrapper(value: value, field: submittedBy)
+    }
+    
+    public init(_wrapper: _Wrapper<Event, ObjectIdentifier?>) {
+        self.value = _wrapper.value
+        self.submittedBy = _wrapper.field
+    }    
+}
+
+public class SignedPublisher<Event> : PublisherProtocol {
+    
+    public var subscribers: [ObjectIdentifier : EventHandler<Signed<Event>>] = [:]
 
     public init() { }
+    
+    func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
+        subscribers.forEach { (subcriberIdentifier, handler) in
+            if subcriberIdentifier != submitterIdentifier {
+                handler(.init(event, submitterIdentifier))
+            }
+        }
+    }
+    
+    func publish(_ event: Event, submittedBy submitter: AnyObject?) {
+        publish(event, submitterIdentifier: submitter.map(ObjectIdentifier.init))
+    }
     
 }
