@@ -183,7 +183,7 @@ public extension PublisherProxy where Event : SignedProtocol {
         }, unsubscribe: self._unsubscribe)
     }
     
-    var valueOnly: PublisherProxy<Event.Wrapped> {
+    var unsigned: PublisherProxy<Event.Wrapped> {
         return self.map({ $0.value })
     }
     
