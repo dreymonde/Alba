@@ -144,7 +144,7 @@ public extension PublisherProxy where Event : Wrapper {
         self.subscribe(objectWith: identifier, with: { [weak object] event in
             if let object = object {
                 let handler = producer(object)
-                let wrapper = event._wrapper()
+                let wrapper = event.wrapper()
                 handler(wrapper.value, wrapper.field)
             } else {
                 self.unsubscribe(objectWith: identifier)
@@ -164,8 +164,8 @@ public extension PublisherProxy where Event : Wrapper {
     func mapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent.Wrapped) -> PublisherProxy<OtherEvent> where OtherEvent : Wrapper, OtherEvent.Field == Event.Field {
         return PublisherProxy<OtherEvent>(subscribe: { (identifier, handle) in
             let handler: EventHandler<Event> = { event in
-                let wr = event._wrapper().map(transform)
-                let newEvent = OtherEvent.init(_wrapper: wr)
+                let wr = event.wrapper().map(transform)
+                let newEvent = OtherEvent.init(wrapper: wr)
                 handle(newEvent)
             }
             self._subscribe(identifier, handler)
@@ -176,8 +176,8 @@ public extension PublisherProxy where Event : Wrapper {
         return PublisherProxy<OtherEvent>(subscribe: { (identifier, handle) in
             let handler: EventHandler<Event> = { event in
                 if let newValue = transform(event.value) {
-                    let wr = _Wrapper(value: newValue, field: event._wrapper().field)
-                    let newEvent = OtherEvent.init(_wrapper: wr)
+                    let wr = AdditionalField(value: newValue, field: event.wrapper().field)
+                    let newEvent = OtherEvent.init(wrapper: wr)
                     handle(newEvent)
                 }
             }

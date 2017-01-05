@@ -92,13 +92,13 @@ public struct Signed<Event> : Wrapper {
         self.submittedBy = submittedBy
     }
     
-    public func _wrapper() -> _Wrapper<Event, ObjectIdentifier?> {
-        return _Wrapper(value: value, field: submittedBy)
+    public func wrapper() -> AdditionalField<Event, ObjectIdentifier?> {
+        return AdditionalField(value: value, field: submittedBy)
     }
     
-    public init(_wrapper: _Wrapper<Event, ObjectIdentifier?>) {
-        self.value = _wrapper.value
-        self.submittedBy = _wrapper.field
+    public init(wrapper: AdditionalField<Event, ObjectIdentifier?>) {
+        self.value = wrapper.value
+        self.submittedBy = wrapper.field
     }    
 }
 

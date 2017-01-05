@@ -26,14 +26,13 @@
 
 public typealias EventHandler<Event> = (Event) -> ()
 
-public struct _Wrapper<Value, Field> {
+public struct AdditionalField<Value, Field> {
     public var value: Value
     public var field: Field
     
-    public func map<T>(_ transform: (Value) -> T) -> _Wrapper<T, Field> {
-        return _Wrapper<T, Field>(value: transform(self.value), field: self.field)
+    public func map<T>(_ transform: (Value) -> T) -> AdditionalField<T, Field> {
+        return AdditionalField<T, Field>(value: transform(self.value), field: self.field)
     }
-    
 }
 
 public protocol Wrapper {
@@ -43,7 +42,7 @@ public protocol Wrapper {
     
     var value: Wrapped { get set }
     
-    func _wrapper() -> _Wrapper<Wrapped, Field>
-    init(_wrapper: _Wrapper<Wrapped, Field>)
+    func wrapper() -> AdditionalField<Wrapped, Field>
+    init(wrapper: AdditionalField<Wrapped, Field>)
     
 }
