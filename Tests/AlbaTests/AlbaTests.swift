@@ -204,4 +204,9 @@ class AlbaTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
     }
     
+    func testMapValue() {
+//        let signed = SignedPublisher<Int>()
+//        let strsgn = signed.proxy.mapValue(String.init)
+    }
+    
 }

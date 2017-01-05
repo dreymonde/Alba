@@ -26,23 +26,25 @@
 
 public typealias EventHandler<Event> = (Event) -> ()
 
-public struct AdditionalField<Value, Field> {
-    public var value: Value
-    public var field: Field
-    
-    public func map<T>(_ transform: (Value) -> T) -> AdditionalField<T, Field> {
-        return AdditionalField<T, Field>(value: transform(self.value), field: self.field)
-    }
-}
-
-public protocol Wrapper {
+public protocol SignedProtocol {
     
     associatedtype Wrapped
-    associatedtype Field
     
     var value: Wrapped { get set }
+    var submittedBy: ObjectIdentifier? { get set }
     
-    func wrapper() -> AdditionalField<Wrapped, Field>
-    init(wrapper: AdditionalField<Wrapped, Field>)
+}
+
+public struct Signed<Value> : SignedProtocol {
+    public var value: Value
+    public var submittedBy: ObjectIdentifier?
     
+    public init(_ value: Value, _ submittedBy: ObjectIdentifier?) {
+        self.value = value
+        self.submittedBy = submittedBy
+    }
+    
+    public func map<T>(_ transform: (Value) -> T) -> Signed<T> {
+        return Signed<T>(transform(self.value), self.submittedBy)
+    }
 }

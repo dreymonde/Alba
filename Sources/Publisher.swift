@@ -78,30 +78,6 @@ public class Publisher<Event> : PublisherProtocol {
     
 }
 
-public struct Signed<Event> : Wrapper {
-    public var value: Event
-    public let submittedBy: ObjectIdentifier?
-    
-    public init(_ value: Event, submittedBy: ObjectIdentifier?) {
-        self.value = value
-        self.submittedBy = submittedBy
-    }
-    
-    public init(_ value: Event, _ submittedBy: ObjectIdentifier?) {
-        self.value = value
-        self.submittedBy = submittedBy
-    }
-    
-    public func wrapper() -> AdditionalField<Event, ObjectIdentifier?> {
-        return AdditionalField(value: value, field: submittedBy)
-    }
-    
-    public init(wrapper: AdditionalField<Event, ObjectIdentifier?>) {
-        self.value = wrapper.value
-        self.submittedBy = wrapper.field
-    }    
-}
-
 public class SignedPublisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Signed<Event>>] = [:]
