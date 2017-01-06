@@ -67,7 +67,7 @@ class AlbaTests: XCTestCase {
             if signed {
                 sproxy.subscribe(self, with: DEA.handleSigned)
             } else {
-                sproxy.valueOnly.subscribe(self, with: DEA.handle)
+                sproxy.unsigned.subscribe(self, with: DEA.handle)
             }
         }
         deinit {
