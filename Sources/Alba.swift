@@ -48,3 +48,12 @@ public struct Signed<Value> : SignedProtocol {
         return Signed<T>(transform(self.value), self.submittedBy)
     }
 }
+
+// MARK: - Alba tests
+
+extension Publisher {
+    
+    
+    
+}
+
