@@ -22,30 +22,7 @@
  *  SOFTWARE.
  */
 
-public protocol PublisherProxyProtocol {
-    
-    associatedtype Subscription
-    
-    func subscribe(objectWith objectIdentifier: ObjectIdentifier, with subscription: Subscription)
-    func unsubscribe(objectWith objectIdentifier: ObjectIdentifier)
-    
-}
-
-public extension PublisherProxyProtocol {
-    
-    func subscribe(_ object: AnyObject, with subscription: Subscription) {
-        let identifier = ObjectIdentifier(object)
-        subscribe(objectWith: identifier, with: subscription)
-    }
-    
-    func unsubscribe(_ object: AnyObject) {
-        let identifier = ObjectIdentifier(object)
-        unsubscribe(objectWith: identifier)
-    }
-    
-}
-
-public struct PublisherProxy<Event> : PublisherProxyProtocol {
+public struct PublisherProxy<Event> {
     
     fileprivate let _subscribe: (ObjectIdentifier, @escaping EventHandler<Event>) -> ()
     fileprivate let _unsubscribe: (ObjectIdentifier) -> ()
@@ -72,23 +49,14 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
 //        }, unsubscribe: self._unsubscribe)
 //    }
     
-    public func subscribe(objectWith objectIdentifier: ObjectIdentifier,
-                          with handler: @escaping EventHandler<Event>) {
-        _subscribe(objectIdentifier, handler)
-    }
-    
-    public func unsubscribe(objectWith objectIdentifier: ObjectIdentifier) {
-        _unsubscribe(objectIdentifier)
-    }
-    
     public func subscribe<Object : AnyObject>(_ object: Object,
                           with producer: @escaping (Object) -> EventHandler<Event>) {
         let identifier = ObjectIdentifier(object)
-        self.subscribe(objectWith: identifier, with: { [weak object] in
+        self._subscribe(identifier, { [weak object] in
             if let object = object {
                 producer(object)($0)
             } else {
-                self.unsubscribe(objectWith: identifier)
+                self._unsubscribe(identifier)
             }
         })
     }
@@ -126,12 +94,41 @@ public struct PublisherProxy<Event> : PublisherProxyProtocol {
         }, unsubscribe: self._unsubscribe)
     }
     
-    public func redirect<Pub : PublisherProtocol>(to publisher: Pub) where Pub.Event == Event {
-        subscribe(publisher, with: Pub.publish)
+    public func redirect<Publisher : PublisherProtocol>(to publisher: Publisher) where Publisher.Event == Event {
+        subscribe(publisher, with: Publisher.publish)
     }
     
     public func listen(with handler: @escaping EventHandler<Event>) {
         _ = NotGoingBasicListener<Event>(subscribingTo: self, handler)
+    }
+    
+    public var unsafe: UnsafePublisherProxy<Event> {
+        return UnsafePublisherProxy(proxy: self)
+    }
+    
+}
+
+public struct UnsafePublisherProxy<Event> {
+    
+    fileprivate let proxy: PublisherProxy<Event>
+    
+    func subscribe(_ object: AnyObject, with subscription: @escaping EventHandler<Event>) {
+        let identifier = ObjectIdentifier(object)
+        proxy._subscribe(identifier, subscription)
+    }
+    
+    func unsubscribe(_ object: AnyObject) {
+        let identifier = ObjectIdentifier(object)
+        proxy._unsubscribe(identifier)
+    }
+    
+    public func subscribe(objectWith objectIdentifier: ObjectIdentifier,
+                          with handler: @escaping EventHandler<Event>) {
+        proxy._subscribe(objectIdentifier, handler)
+    }
+    
+    public func unsubscribe(objectWith objectIdentifier: ObjectIdentifier) {
+        proxy._unsubscribe(objectIdentifier)
     }
     
 }
@@ -141,13 +138,12 @@ public extension PublisherProxy where Event : SignedProtocol {
     public func subscribe<Object : AnyObject>(_ object: Object,
                           with producer: @escaping (Object) -> EventHandler<(Event.Wrapped, ObjectIdentifier?)>) {
         let identifier = ObjectIdentifier(object)
-        self.subscribe(objectWith: identifier, with: { [weak object] event in
+        self._subscribe(identifier, { [weak object] event in
             if let object = object {
                 let handler = producer(object)
-                //let wrapper = event.wrapper()
                 handler((event.value, event.submittedBy))
             } else {
-                self.unsubscribe(objectWith: identifier)
+                self._unsubscribe(identifier)
             }
         })
     }

@@ -78,27 +78,6 @@ public class Publisher<Event> : PublisherProtocol {
     
 }
 
-public struct Pub<Event> {
-    
-    private let publisher: Publisher<Event>
-    public var proxy: PublisherProxy<Event> {
-        return publisher.proxy
-    }
-
-    public init(publisher: Publisher<Event> = .init()) {
-        self.publisher = publisher
-    }
-
-    public mutating func publish(_ event: Event) {
-        publisher.publish(event)
-    }
-    
-    public mutating func consume(_ proxy: PublisherProxy<Event>) {
-        proxy.redirect(to: publisher)
-    }
-    
-}
-
 public class SignedPublisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Signed<Event>>] = [:]
@@ -115,35 +94,6 @@ public class SignedPublisher<Event> : PublisherProtocol {
     
     public func publish(_ event: Event, submittedBy submitter: AnyObject?) {
         publish(event, submitterIdentifier: submitter.map(ObjectIdentifier.init))
-    }
-    
-}
-
-public struct SignedPub<Event> {
-    
-    private let publisher: SignedPublisher<Event>
-    public var proxy: SignedPublisherProxy<Event> {
-        return publisher.proxy
-    }
-    
-    public init(publisher: SignedPublisher<Event> = .init()) {
-        self.publisher = publisher
-    }
-    
-    public mutating func publish(_ signedEvent: Signed<Event>) {
-        publisher.publish(signedEvent)
-    }
-    
-    public mutating func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
-        publisher.publish(event, submitterIdentifier: submitterIdentifier)
-    }
-    
-    public mutating func publish(_ event: Event, submittedBy submitter: AnyObject?) {
-        publisher.publish(event, submittedBy: submitter)
-    }
-    
-    public mutating func consume(_ proxy: SignedPublisherProxy<Event>) {
-        proxy.redirect(to: publisher)
     }
     
 }

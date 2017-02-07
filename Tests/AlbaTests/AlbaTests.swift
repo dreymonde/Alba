@@ -204,52 +204,6 @@ class AlbaTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
     }
     
-    class Bourbon {
-        
-        private(set) var pub = Pub<Int>()
-        
-        let external = Publisher<UInt>()
-        
-        init() {
-            pub.consume(external.proxy.map(Int.init(_:)))
-        }
-        
-        func ping() {
-            pub.publish(10)
-        }
-        
-    }
-    
-    func testPub() {
-        let bourbon = Bourbon()
-        var state = 0
-        bourbon.pub.proxy.listen { (number) in
-            if state == 0 { XCTAssertEqual(number, 10) }
-            if state == 1 { XCTAssertEqual(number, 15) }
-            state += 1
-        }
-        bourbon.ping()
-        bourbon.external.publish(15)
-    }
-    
-    class SignedBourbon {
-    
-        private(set) var pub = SignedPub<Int>()
-        
-        func ping() {
-            pub.publish(10, submittedBy: nil)
-        }
-        
-    }
-    
-    func testSignedPub() {
-        let bourbon = SignedBourbon()
-        bourbon.pub.proxy.unsigned.listen { (number) in
-            XCTAssertEqual(number, 10)
-        }
-        bourbon.ping()
-    }
-    
     func testMapValue() {
 //        let signed = SignedPublisher<Int>()
 //        let strsgn = signed.proxy.mapValue(String.init)
