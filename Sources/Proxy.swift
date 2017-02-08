@@ -102,12 +102,12 @@ public struct UnsafePublisherProxy<Event> {
     
     fileprivate let proxy: PublisherProxy<Event>
     
-    func subscribe(_ object: AnyObject, with subscription: @escaping EventHandler<Event>) {
+    public func subscribe(_ object: AnyObject, with subscription: @escaping EventHandler<Event>) {
         let identifier = ObjectIdentifier(object)
         proxy._subscribe(identifier, subscription)
     }
     
-    func unsubscribe(_ object: AnyObject) {
+    public func unsubscribe(_ object: AnyObject) {
         let identifier = ObjectIdentifier(object)
         proxy._unsubscribe(identifier)
     }

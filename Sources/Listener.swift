@@ -22,19 +22,19 @@
  *  SOFTWARE.
  */
 
-public class BasicListener<Event> {
+internal class BasicListener<Event> {
     
-    public let publisher: PublisherProxy<Event>
-    public let handler: EventHandler<Event>
+    internal let publisher: PublisherProxy<Event>
+    internal let handler: EventHandler<Event>
     
-    public init(subscribingTo publisher: PublisherProxy<Event>,
+    internal init(subscribingTo publisher: PublisherProxy<Event>,
                 _ handler: @escaping EventHandler<Event>) {
         self.publisher = publisher
         self.handler = handler
         publisher.unsafe.subscribe(self, with: handler)
     }
     
-    public init<Pub : PublisherProtocol>(subscribingTo publisher: Pub,
+    internal init<Pub : PublisherProtocol>(subscribingTo publisher: Pub,
                 _ handler: @escaping EventHandler<Event>) where Pub.Event == Event {
         self.publisher = publisher.proxy
         self.handler = handler
