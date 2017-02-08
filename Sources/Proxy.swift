@@ -33,16 +33,6 @@ public struct PublisherProxy<Event> {
         self._unsubscribe = unsubscribe
     }
     
-    public init<Pub : PublisherProtocol>(_ publisher: Pub) where Pub.Event == Event {
-        self._subscribe = { [weak publisher] in publisher?.subscribe(objectWith: $0, with: $1) }
-        self._unsubscribe = { [weak publisher] in publisher?.unsubscribe(objectWith: $0) }
-    }
-    
-    public init<Pub : PublisherProtocol>(strong publisher: Pub) where Pub.Event == Event {
-        self._subscribe = publisher.subscribe(objectWith:with:)
-        self._unsubscribe = publisher.unsubscribe(objectWith:)
-    }
-    
 //    public var signed: SignedPublisherProxy<Event> {
 //        return SignedPublisherProxy<Event>(subscribe: { (identifier, handler) in
 //            self._subscribe(identifier, unsigned(handler))
@@ -181,14 +171,6 @@ public extension PublisherProxy where Event : SignedProtocol {
     
     var unsigned: PublisherProxy<Event.Wrapped> {
         return self.map({ $0.value })
-    }
-    
-}
-
-public extension PublisherProtocol {
-    
-    var proxy: PublisherProxy<Event> {
-        return PublisherProxy(self)
     }
     
 }

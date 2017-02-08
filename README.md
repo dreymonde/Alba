@@ -4,73 +4,43 @@
 
 ## Usage
 
-### Publishers
+#### Create publisher
 
 ```swift
-final class UUIDSubmitter : Publisher {
-    typealias Event = UUID
-    var subscribers: [ObjectIdentifier : (UUID) -> ()] = [:]
-}
-
-let submitter = UUIDSubmitter()
-submitter.publish(UUID())
-
-//or
-
-let publisher = BasicPublisher<UUID>()
+let publisher = Publisher<UUID>()
 publisher.publish(UUID())
 ```
 
-### Subscribing
+#### Subscribing
 
-You should subscribe using so-called "publisher proxy". They are eas to inject and handy to use:
+Notice that for subscribing you should use `PublisherProxy` instead of `Publisher`!
 
 ```swift
-final class Listener {
+final class NumbersPrinter {
     
-    let publisher: PublisherProxy<UUID>
-    
-    init(publisher: PublisherProxy<UUID>) {
-        self.publisher = publisher
-        publisher.subscribe(self, with: { [unowned self] in self.didReceive(uuid: $0) })
+    init(numbersPublisher: PublisherProxy<Int>) {
+        numbersPublisher.subscribe(self, with: NumbersPrinter.print)
     }
     
-    deinit {
-        publisher.unsubscribe(self)
-    }
-    
-    func didReceive(uuid: UUID) {
+    func print(_ uuid: Int) {
         print(uuid)
     }
     
 }
+
+let printer = NumbersPrinter(numbersPublisher: publisher.proxy)
+publisher.publish(10) // prints "10"
 ```
 
-You should use `unowned` (or `weak`, if you prefer) here because otherwise you will get reference cycle, and you should _unsubscribe_ manually (especially when using `unowned` -- you will get runtime error otherwise).
+If you're surprised by how `NumbersPrinter.print` looks - that's because this allows **Alba** to do some interesting stuff with reference cycles. Check out the [implementation](https://github.com/dreymonde/Alba/blob/master/Sources/Proxy.swift#L52) for details.
 
-If you don't want to do that manually, you can use **Alba**'s handy functionality for that:
-
-```swift
-final class Listener {
-    
-    init(publisher: PublisherProxy<UUID>) {
-        publisher.subscribe(self, with: Listener.didReceive)
-    }
-    
-    func didReceive(uuid: UUID) {
-        print(uuid)
-    }
-    
-}
-```
-
-Thanks to the power of generics, this will automatically subscribe as `weak` and unsubscribe after the object is gone. And you can also get rid of that `publisher` stored property!
-
-##### That functional things
+#### That functional things
 
 The cool thing about publisher proxies is the ability to do interesting things on them, for example, filter and map:
 
 ```swift
+let stringPublisher = Publisher<String>()
+
 final class Listener {
     
     init(publisher: PublisherProxy<String>) {
@@ -86,20 +56,25 @@ final class Listener {
     
 }
 
-let listener = Listener2(publisher: BasicPublisher<String>().proxy)
+let listener = Listener(publisher: stringPublisher.proxy)
+stringPublisher.publish("14aq") // nothing
+stringPublisher.publish("-5")   // nothing
+stringPublisher.publish("15")   // prints "15"
 ```
 
 Cool, huh?
 
-##### Lightweight listeners
+#### Lightweight observing
 
 ```swift
-let publisher = BasicPublisher<Int>()
-let listener = BasicListener<Int>(subscribingTo: publisher) { number in
+let publisher = Publisher<Int>()
+publisher.proxy.listen { (number) in
     print(number)
 }
-publisher.publish(10)
+publisher.publish(112) // prints "112"
 ```
+
+Be careful with `listen`. Don't prefer it over `subscribe` as it can introduce memory leaks to your application.
 
 ### Observables
 
@@ -115,55 +90,32 @@ let state = State()
 state.number.proxy.subscribe( ... )
 ```
 
-### Signed events
+## Installation
 
-**Alba** also gives you the ability to publish *signed* events. Signed events doesn't notify its _submitter_. For example:
+**Alba** is available through [Carthage][carthage-url]. To install, just write into your Cartfile:
 
-```swift
-enum Alba {
-    case v
-    case y
-    case t
-}
-
-final class AlbaController {
-    
-    private let publisher = BasicSignedPublisher<Alba>()
-    let alba: SignedPublisherProxy<Alba>
-    
-    init() {
-        self.alba = publisher.proxy
-    }
-    
-    func submit(_ alba: Alba, by submitter: AnyObject?) {
-        publisher.publish(alba, submittedBy: submitter)
-    }
-    
-}
-
-final class Component {
-    
-    init(albaPublisher: SignedPublisherProxy<Alba>) {
-        albaPublisher.subscribe(self, with: Component.didReceive)
-    }
-    
-    func didReceive(alba: Alba, submitter: ObjectIdentifier?) {
-        print(alba)
-    }
-    
-}
-
-let controller = AlbaController()
-let component = Component(albaPublisher: controller.alba)
-// component will be notified:
-controller.submit(.v, by: nil)
-// controller won't be notified:
-controller.submit(.t, by: component)
+```ruby
+github "AdvancedOperations/Operations" ~> 0.5.0
 ```
 
-"Signed" APIs are mostly the same -- just add `Signed` before (`SignedPublisher`, `BasicSignedPublisher`, `BasicSignedListener`, `SignedPublisherProxy` ...). You can also drop signed thing from proxy using `.unsigned` property:
+You can also use SwiftPM. Just add to your `Package.swift`:
 
 ```swift
-let signed = BasicSignedPublisher<Int>()
-let unsignedProxy = signed.proxy.unsigned
+import PackageDescription
+
+let package = Package(
+    dependencies: [
+        .Package(url: "https://github.com/Zewo/Mapper.git", majorVersion: 0, minor: 1),
+    ]
+)
 ```
+
+## Contributing
+
+**Alba** is in early stage of development and is opened for any ideas. If you want to contribute, you can:
+
+- Propose idea/bugfix in issues
+- Make a pull request
+- Review any other pull request (very appreciated!), since no change to this project is made without a PR.
+
+Actually, any help is welcomed! Feel free to contact us, ask questions and propose new ideas. If you don't want to raise a public issue, you can reach me at [dreymonde@me.com](mailto:dreymonde@me.com).
