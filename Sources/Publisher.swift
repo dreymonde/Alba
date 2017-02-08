@@ -41,23 +41,6 @@ public extension Subscribable {
     
 }
 
-//public extension Subscribable {
-//    
-//    func subscribe(objectWith objectIdentifier: ObjectIdentifier, with subscription: Subscription) {
-//        #if DEBUG
-//            if let _ = subscribers[objectIdentifier] {
-//                print("Already existing subscription for \(objectIdentifier), overwriting...")
-//            }
-//        #endif
-//        subscribers[objectIdentifier] = subscription
-//    }
-//    
-//    func unsubscribe(objectWith objectIdentifier: ObjectIdentifier) {
-//        subscribers[objectIdentifier] = nil
-//    }
-//    
-//}
-
 public protocol PublisherProtocol : class, Subscribable {
         
     associatedtype Event
@@ -80,13 +63,13 @@ public class Publisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Event>] = [:]
     
-    public init() { }
+    public init() {
+        self.proxy = PublisherProxy.empty()
+        self.proxy = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
+                                    unsubscribe: { self.subscribers[$0] = nil })
+    }
     
-    lazy public private(set) var proxy: PublisherProxy<Event> = {
-        let pr = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
-                                unsubscribe: { self.subscribers[$0] = nil })
-        return pr
-    }()
+    public private(set) var proxy: PublisherProxy<Event>
     
 }
 
@@ -94,13 +77,13 @@ public class SignedPublisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Signed<Event>>] = [:]
 
-    public init() { }
+    public init() {
+        self.proxy = PublisherProxy.empty()
+        self.proxy = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
+                                    unsubscribe: { self.subscribers[$0] = nil })
+    }
     
-    lazy public private(set) var proxy: SignedPublisherProxy<Event> = {
-        let pr = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
-                                unsubscribe: { self.subscribers[$0] = nil })
-        return pr
-    }()
+    public private(set) var proxy: SignedPublisherProxy<Event>
     
     public func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
         subscribers.forEach { (subcriberIdentifier, handler) in
