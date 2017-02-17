@@ -42,7 +42,7 @@ class AlbaTests: XCTestCase {
     }
     
     func testSimplest() {
-        let pub = Publisher<Int>()
+        let pub = Publisher<Int>(label: "testSimplest.pub")
         let expectation = self.expectation(description: "On Sub")
         pub.proxy.listen { (number) in
             XCTAssertEqual(number, 5)
@@ -290,6 +290,17 @@ class AlbaTests: XCTestCase {
         publisher.proxy
             .flatMap({ Int.init($0) })
             .subscribe(hand, with: Hand.handle)
+    }
+    
+    func testWarning() {
+        let proxy = PublisherProxy<Int>.empty()
+        let obj = Hand()
+        let expectation = self.expectation(description: "on warning")
+        Alba.InformBureau.generalWarnings
+            .map({ print($0); return () })
+            .listen(with: expectation.fulfill)
+        proxy.subscribe(obj, with: Hand.handle)
+        waitForExpectations(timeout: 5.0)
     }
     
 }

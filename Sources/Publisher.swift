@@ -65,7 +65,7 @@ public class Publisher<Event> : PublisherProtocol {
     
     public var label: String
     
-    public init(label: String = String(describing: Publisher<Event>.self)) {
+    public init(label: String = "unnamed") {
         self.proxy = PublisherProxy.empty()
         let initialPayload = ProxyPayload.empty.adding(entry: .publisherLabel("\(String.init(describing: Publisher<Event>.self)):\(label)"))
         self.label = label
@@ -80,38 +80,23 @@ public class Publisher<Event> : PublisherProtocol {
         if InformBureau.isEnabled {
             InformBureau.submitPublishing("\(self):\(label) published \(event)")
         }
-        subscribers.values.forEach({ handle in handle(event) })
+        subscribers.forEach({ _, handle in
+            handle(event)
+        })
     }
     
 }
 
-public class SignedPublisher<Event> : PublisherProtocol {
-    
-    public var subscribers: [ObjectIdentifier : EventHandler<Signed<Event>>] = [:]
+public typealias SignedPublisher<Event> = Publisher<Signed<Event>>
 
-    public let label: String
+public extension Publisher where Event : SignedProtocol {
     
-    public init(label: String = String(describing: SignedPublisher<Event>.self)) {
-        self.proxy = PublisherProxy.empty()
-        let initialPayload = ProxyPayload.empty.adding(entry: .publisherLabel("\(String.init(describing: SignedPublisher<Event>.self)):\(label)"))
-        self.label = label
-        self.proxy = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
-                                    unsubscribe: { self.subscribers[$0] = nil },
-                                    payload: initialPayload)
+    func publish(_ event: Event.Wrapped, submitterIdentifier: ObjectIdentifier?) {
+        let signed = Signed<Event.Wrapped>(event, submitterIdentifier)
+        self.publish(.init(signed))
     }
     
-    public private(set) var proxy: SignedPublisherProxy<Event>
-    
-    public func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
-        if InformBureau.isEnabled {
-            InformBureau.submitPublishing("\(self):\(label) published \(event)")
-        }
-        subscribers.forEach { (subcriberIdentifier, handler) in
-            handler(.init(event, submitterIdentifier))
-        }
-    }
-    
-    public func publish(_ event: Event, submittedBy submitter: AnyObject?) {
+    func publish(_ event: Event.Wrapped, submittedBy submitter: AnyObject?) {
         publish(event, submitterIdentifier: submitter.map(ObjectIdentifier.init))
     }
     

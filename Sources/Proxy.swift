@@ -91,9 +91,6 @@ public struct PublisherProxy<Event> {
         }
         self._subscribe(identifier, { [weak object] in
             if let object = object {
-                if InformBureau.isEnabled {
-                    InformBureau.submitPublishing("handled")
-                }
                 producer(object)($0)
             } else {
                 self._unsubscribe(identifier)
@@ -251,7 +248,11 @@ public extension PublisherProxy where Event : SignedProtocol {
 public extension PublisherProxy {
     
     static func empty() -> PublisherProxy<Event> {
-        return PublisherProxy<Event>(subscribe: { _ in },
+        return PublisherProxy<Event>(subscribe: { identifier, _ in
+            if InformBureau.isEnabled {
+                InformBureau.submitGeneralWarning("\(identifier) is subscribing to an empty proxy")
+            }
+        },
                                      unsubscribe: { _ in })
     }
     

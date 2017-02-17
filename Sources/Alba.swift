@@ -33,6 +33,8 @@ public protocol SignedProtocol {
     var value: Wrapped { get set }
     var submittedBy: ObjectIdentifier? { get set }
     
+    init(_ signed: Signed<Wrapped>)
+    
 }
 
 public struct Signed<Value> : SignedProtocol {
@@ -46,6 +48,10 @@ public struct Signed<Value> : SignedProtocol {
     
     public func map<T>(_ transform: (Value) -> T) -> Signed<T> {
         return Signed<T>(transform(self.value), self.submittedBy)
+    }
+    
+    public init(_ signed: Signed<Value>) {
+        self = signed
     }
 }
 

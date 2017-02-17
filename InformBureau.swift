@@ -26,6 +26,7 @@ public class InformBureau {
     
     public typealias SubscriptionLogMessage = ProxyPayload
     public typealias PublishingLogMessage = String
+    public typealias GeneralWarningLogMessage = String
     
     public static var isEnabled = false
     
@@ -33,7 +34,8 @@ public class InformBureau {
     
     public static func enableLogger() {
         didSubscribe.subscribe(logger, with: Logger.logSub)
-        didPublish.subscribe(logger, with: Logger.logPub)
+        // didPublish.subscribe(logger, with: Logger.logPub)
+        generalWarnings.subscribe(logger, with: Logger.logGeneralWarning)
     }
     
     fileprivate static let subscriptionPublisher = InformBureauPublisher<SubscriptionLogMessage>()
@@ -42,8 +44,13 @@ public class InformBureau {
     }
     
     fileprivate static let publishingPublisher = InformBureauPublisher<PublishingLogMessage>()
-    public static var didPublish: PublisherProxy<PublishingLogMessage> {
+    fileprivate static var didPublish: PublisherProxy<PublishingLogMessage> {
         return publishingPublisher.proxy
+    }
+    
+    fileprivate static let generalWarningsPublisher = InformBureauPublisher<GeneralWarningLogMessage>()
+    public static var generalWarnings: PublisherProxy<GeneralWarningLogMessage> {
+        return generalWarningsPublisher.proxy
     }
     
     static func submitSubscription(_ logMessage: SubscriptionLogMessage) {
@@ -52,6 +59,10 @@ public class InformBureau {
     
     static func submitPublishing(_ logMessage: PublishingLogMessage) {
         publishingPublisher.publish(logMessage)
+    }
+    
+    static func submitGeneralWarning(_ logMessage: GeneralWarningLogMessage) {
+        generalWarningsPublisher.publish(logMessage)
     }
     
     private class Logger {
@@ -80,8 +91,12 @@ public class InformBureau {
         }
         
         func logPub(_ logMessage: PublishingLogMessage) {
-            print("")
             print("(P) " + logMessage)
+        }
+        
+        func logGeneralWarning(_ logMessage: GeneralWarningLogMessage) {
+            print("")
+            print("(W) \(logMessage)")
         }
         
     }
