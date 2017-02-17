@@ -26,7 +26,20 @@ import Foundation
 import XCTest
 @testable import Alba
 
+var isBureauWorking = false
+
 class AlbaTests: XCTestCase {
+    
+    override func setUp() {
+        if !isBureauWorking {
+            print("Alba Inform Bureau on")
+            Alba.InformBureau.isEnabled = true
+            Alba.InformBureau.enableLogger()
+//            Alba.InformBureau.didPublish.listen(with: { print($0) })
+            isBureauWorking = true
+            print("Now working")
+        }
+    }
     
     func testSimplest() {
         let pub = Publisher<Int>()
@@ -207,6 +220,22 @@ class AlbaTests: XCTestCase {
     func testMapValue() {
 //        let signed = SignedPublisher<Int>()
 //        let strsgn = signed.proxy.mapValue(String.init)
+    }
+    
+    class Hand {
+        
+        func handle(_ int: Int) {
+            print(int)
+        }
+        
+    }
+    
+    func testBureau() {
+        let hand = Hand()
+        let publisher = Publisher<String>(label: "Then-What")
+        publisher.proxy
+            .flatMap({ Int.init($0) })
+            .subscribe(hand, with: Hand.handle)
     }
     
 }

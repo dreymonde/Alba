@@ -26,18 +26,7 @@ public protocol Subscribable : class {
     
     associatedtype Event
     
-    var subscribers: [ObjectIdentifier : EventHandler<Event>] { get set }
-    
     var proxy: PublisherProxy<Event> { get }
-    
-}
-
-public extension Subscribable {
-    
-    var proxy: PublisherProxy<Event> {
-        return PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
-                              unsubscribe: { self.subscribers[$0] = nil })
-    }
     
 }
 
@@ -45,9 +34,20 @@ public protocol PublisherProtocol : class, Subscribable {
         
     associatedtype Event
     
+    var label: String { get }
+    
     var subscribers: [ObjectIdentifier : EventHandler<Event>] { get set }
     
     func publish(_ event: Event)
+    
+}
+
+public extension PublisherProtocol {
+    
+    var proxy: PublisherProxy<Event> {
+        return PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
+                              unsubscribe: { self.subscribers[$0] = nil })
+    }
     
 }
 
@@ -63,13 +63,25 @@ public class Publisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Event>] = [:]
     
-    public init() {
+    public var label: String
+    
+    public init(label: String = String(describing: Publisher<Event>.self)) {
         self.proxy = PublisherProxy.empty()
+        let initialPayload = ProxyPayload.empty.adding(entry: .publisherLabel("\(String.init(describing: Publisher<Event>.self)):\(label)"))
+        self.label = label
         self.proxy = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
-                                    unsubscribe: { self.subscribers[$0] = nil })
+                                    unsubscribe: { self.subscribers[$0] = nil },
+                                    payload: initialPayload)
     }
     
     public private(set) var proxy: PublisherProxy<Event>
+    
+    public func publish(_ event: Event) {
+        if InformBureau.isEnabled {
+            InformBureau.submitPublishing("\(self):\(label) published \(event)")
+        }
+        subscribers.values.forEach({ handle in handle(event) })
+    }
     
 }
 
@@ -77,15 +89,23 @@ public class SignedPublisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Signed<Event>>] = [:]
 
-    public init() {
+    public let label: String
+    
+    public init(label: String = String(describing: SignedPublisher<Event>.self)) {
         self.proxy = PublisherProxy.empty()
+        let initialPayload = ProxyPayload.empty.adding(entry: .publisherLabel("\(String.init(describing: SignedPublisher<Event>.self)):\(label)"))
+        self.label = label
         self.proxy = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
-                                    unsubscribe: { self.subscribers[$0] = nil })
+                                    unsubscribe: { self.subscribers[$0] = nil },
+                                    payload: initialPayload)
     }
     
     public private(set) var proxy: SignedPublisherProxy<Event>
     
     public func publish(_ event: Event, submitterIdentifier: ObjectIdentifier?) {
+        if InformBureau.isEnabled {
+            InformBureau.submitPublishing("\(self):\(label) published \(event)")
+        }
         subscribers.forEach { (subcriberIdentifier, handler) in
             if subcriberIdentifier != submitterIdentifier {
                 handler(.init(event, submitterIdentifier))
