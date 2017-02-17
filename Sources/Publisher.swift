@@ -107,9 +107,7 @@ public class SignedPublisher<Event> : PublisherProtocol {
             InformBureau.submitPublishing("\(self):\(label) published \(event)")
         }
         subscribers.forEach { (subcriberIdentifier, handler) in
-            if subcriberIdentifier != submitterIdentifier {
-                handler(.init(event, submitterIdentifier))
-            }
+            handler(.init(event, submitterIdentifier))
         }
     }
     
