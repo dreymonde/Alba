@@ -39,17 +39,71 @@ class AlbaTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
     }
     
+    class SignedThing {
+        
+        var expectation: XCTestExpectation
+        
+        init(expectation: XCTestExpectation) {
+            self.expectation = expectation
+        }
+        
+        func handle(_ number: Int, submittedBySelf: Bool) {
+            if submittedBySelf {
+                if number == 7 {
+                    XCTFail()
+                }
+            } else {
+                if number == 5 {
+                    XCTFail()
+                }
+                if number == 7 {
+                    expectation.fulfill()
+                }
+            }
+        }
+        
+    }
+    
     func testSigned() {
         let pub = SignedPublisher<Int>()
         let expectation = self.expectation(description: "On sub")
-        let sub = BasicListener(subscribingTo: pub) { (number) in
-            if number.value == 5 {
-                XCTFail()
-            }
-            if number.value == 7 {
-                expectation.fulfill()
+        let sub = SignedThing(expectation: expectation)
+        pub.proxy.subscribe(sub, with: SignedThing.handle)
+        pub.publish(5, submittedBy: sub)
+        pub.publish(7, submittedBy: nil)
+        waitForExpectations(timeout: 5.0)
+    }
+    
+    class SignedThing2 {
+        
+        var expectation: XCTestExpectation
+        
+        init(expectation: XCTestExpectation) {
+            self.expectation = expectation
+        }
+        
+        func handle(_ number: Int, submittedByObjectWith identifier: ObjectIdentifier?) {
+            if identifier?.belongsTo(self) == true {
+                if number == 7 {
+                    XCTFail()
+                }
+            } else {
+                if number == 5 {
+                    XCTFail()
+                }
+                if number == 7 {
+                    expectation.fulfill()
+                }
             }
         }
+        
+    }
+    
+    func testSigned2() {
+        let pub = SignedPublisher<Int>()
+        let expectation = self.expectation(description: "On sub")
+        let sub = SignedThing2(expectation: expectation)
+        pub.proxy.subscribe(sub, with: SignedThing2.handle)
         pub.publish(5, submittedBy: sub)
         pub.publish(7, submittedBy: nil)
         waitForExpectations(timeout: 5.0)

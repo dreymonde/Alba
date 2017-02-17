@@ -126,12 +126,25 @@ public struct UnsafePublisherProxy<Event> {
 public extension PublisherProxy where Event : SignedProtocol {
     
     public func subscribe<Object : AnyObject>(_ object: Object,
-                          with producer: @escaping (Object) -> EventHandler<(Event.Wrapped, ObjectIdentifier?)>) {
+                          with producer: @escaping (Object) -> EventHandler<(Event.Wrapped, submitterIdentifier: ObjectIdentifier?)>) {
         let identifier = ObjectIdentifier(object)
         self._subscribe(identifier, { [weak object] event in
             if let object = object {
                 let handler = producer(object)
                 handler((event.value, event.submittedBy))
+            } else {
+                self._unsubscribe(identifier)
+            }
+        })
+    }
+    
+    public func subscribe<Object : AnyObject>(_ object: Object,
+                          with producer: @escaping (Object) -> EventHandler<(Event.Wrapped, submittedBySelf: Bool)>) {
+        let identifier = ObjectIdentifier(object)
+        self._subscribe(identifier, { [weak object] event in
+            if let object = object {
+                let handler = producer(object)
+                handler((event.value, event.submittedBy == identifier))
             } else {
                 self._unsubscribe(identifier)
             }

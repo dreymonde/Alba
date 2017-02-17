@@ -48,3 +48,11 @@ public struct Signed<Value> : SignedProtocol {
         return Signed<T>(transform(self.value), self.submittedBy)
     }
 }
+
+public extension ObjectIdentifier {
+    
+    func belongsTo(_ object: AnyObject) -> Bool {
+        return ObjectIdentifier(object) == self
+    }
+    
+}
