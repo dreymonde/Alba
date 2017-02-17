@@ -229,7 +229,7 @@ class AlbaTests: XCTestCase {
     
     func testRedirect() {
         let pubOne = Publisher<Int>()
-        let pubTwo = Publisher<String>()
+        let pubTwo = Publisher<String>(label: "testRedirect.pubTwo")
         let expectation = self.expectation(description: "onsubtwo")
         pubOne.proxy
             .map({ $0 - 1 })
@@ -296,9 +296,14 @@ class AlbaTests: XCTestCase {
         let proxy = PublisherProxy<Int>.empty()
         let obj = Hand()
         let expectation = self.expectation(description: "on warning")
-        Alba.InformBureau.generalWarnings
-            .map({ print($0); return () })
-            .listen(with: expectation.fulfill)
+        Alba.InformBureau.didSubscribe
+            .flatMap({ $0.entries.first })
+            .listen { (logEntry) in
+                print(logEntry)
+                if case .publisherLabel(let name) = logEntry, name == "WARNING: Empty proxy" {
+                    expectation.fulfill()
+                }
+        }
         proxy.subscribe(obj, with: Hand.handle)
         waitForExpectations(timeout: 5.0)
     }

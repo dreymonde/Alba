@@ -248,12 +248,10 @@ public extension PublisherProxy where Event : SignedProtocol {
 public extension PublisherProxy {
     
     static func empty() -> PublisherProxy<Event> {
-        return PublisherProxy<Event>(subscribe: { identifier, _ in
-            if InformBureau.isEnabled {
-                InformBureau.submitGeneralWarning("\(identifier) is subscribing to an empty proxy")
-            }
-        },
-                                     unsubscribe: { _ in })
+        let payload = ProxyPayload.empty.adding(entry: .publisherLabel("WARNING: Empty proxy"))
+        return PublisherProxy<Event>(subscribe: { _ in },
+                                     unsubscribe: { _ in },
+                                     payload: payload)
     }
     
 }
