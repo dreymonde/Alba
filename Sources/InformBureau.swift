@@ -15,9 +15,10 @@ fileprivate class InformBureauPublisher<Event> : Subscribable {
     }
     
     fileprivate var proxy: PublisherProxy<Event> {
+        let payload = ProxyPayload.empty.adding(entry: .publisherLabel("Alba.InformBureau (\(Event.self))"))
         return PublisherProxy(subscribe: { self.handlers.append($0.1) },
                               unsubscribe: { _ in },
-                              payload: .empty)
+                              payload: payload)
     }
     
 }
@@ -29,15 +30,7 @@ public class InformBureau {
     public typealias GeneralWarningLogMessage = String
     
     public static var isEnabled = false
-    
-    private static let logger = Logger()
-    
-    public static func enableLogger() {
-        didSubscribe.subscribe(logger, with: Logger.logSub)
-        // didPublish.subscribe(logger, with: Logger.logPub)
-        generalWarnings.subscribe(logger, with: Logger.logGeneralWarning)
-    }
-    
+        
     fileprivate static let subscriptionPublisher = InformBureauPublisher<SubscriptionLogMessage>()
     public static var didSubscribe: PublisherProxy<SubscriptionLogMessage> {
         return subscriptionPublisher.proxy
@@ -65,7 +58,20 @@ public class InformBureau {
         generalWarningsPublisher.publish(logMessage)
     }
     
-    private class Logger {
+    public class Logger {
+        
+        static let shared = Logger()
+        
+        private init() { }
+        
+        public static func enable() {
+            guard InformBureau.isEnabled else {
+                print("Enable Alba.InformBureau first")
+                return
+            }
+            InformBureau.didSubscribe.subscribe(shared, with: Logger.logSub)
+            InformBureau.generalWarnings.subscribe(shared, with: Logger.logGeneralWarning)
+        }
         
         func logSub(_ logMessage: SubscriptionLogMessage) {
             let mark = "(S) "

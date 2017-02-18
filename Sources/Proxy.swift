@@ -147,6 +147,10 @@ public struct PublisherProxy<Event> {
         _ = NotGoingBasicListener<Event>(subscribingTo: self, handler)
     }
     
+    public func void() -> PublisherProxy<Void> {
+        return map({ _ in })
+    }
+    
     public var unsafe: UnsafePublisherProxy<Event> {
         return UnsafePublisherProxy(proxy: self)
     }

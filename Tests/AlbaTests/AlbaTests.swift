@@ -34,7 +34,7 @@ class AlbaTests: XCTestCase {
         if !isBureauWorking {
             print("Alba Inform Bureau on")
             Alba.InformBureau.isEnabled = true
-            Alba.InformBureau.enableLogger()
+            Alba.InformBureau.Logger.enable()
 //            Alba.InformBureau.didPublish.listen(with: { print($0) })
             isBureauWorking = true
             print("Now working")

@@ -29,10 +29,10 @@
 		7C08125C1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
 		7C08125D1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
 		7C08125E1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
-		BE4CC16C1E4F4F450013E245 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4CC16B1E4F4F450013E245 /* InformBureau.swift */; };
-		BE4CC16D1E4F4FA20013E245 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4CC16B1E4F4F450013E245 /* InformBureau.swift */; };
-		BE4CC16E1E4F4FA20013E245 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4CC16B1E4F4F450013E245 /* InformBureau.swift */; };
-		BE4CC16F1E4F4FA20013E245 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE4CC16B1E4F4F450013E245 /* InformBureau.swift */; };
+		7CBC662B1E5874E20033FF36 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC662A1E5874E20033FF36 /* InformBureau.swift */; };
+		7CBC662C1E5874ED0033FF36 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC662A1E5874E20033FF36 /* InformBureau.swift */; };
+		7CBC662D1E5874ED0033FF36 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC662A1E5874E20033FF36 /* InformBureau.swift */; };
+		7CBC662E1E5874ED0033FF36 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC662A1E5874E20033FF36 /* InformBureau.swift */; };
 		DD7502861C68FDDC006590AF /* AlbaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D6D9971BEFF375002C0205 /* AlbaTests.swift */; };
 		DD7502881C68FEDE006590AF /* Alba.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6DA0F1BF000BD002C0205 /* Alba.framework */; };
 		DD7502921C690C7A006590AF /* Alba.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52D6D9F01BEFFFBE002C0205 /* Alba.framework */; };
@@ -75,9 +75,9 @@
 		7C0812481DE4680100A49B21 /* Observable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Observable.swift; path = Sources/Observable.swift; sourceTree = "<group>"; };
 		7C0812491DE4680100A49B21 /* Proxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Proxy.swift; path = Sources/Proxy.swift; sourceTree = "<group>"; };
 		7C08124A1DE4680100A49B21 /* Publisher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Publisher.swift; path = Sources/Publisher.swift; sourceTree = "<group>"; };
+		7CBC662A1E5874E20033FF36 /* InformBureau.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InformBureau.swift; path = Sources/InformBureau.swift; sourceTree = "<group>"; };
 		AD2FAA261CD0B6D800659CF4 /* Alba.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Alba.plist; sourceTree = "<group>"; };
 		AD2FAA281CD0B6E100659CF4 /* AlbaTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AlbaTests.plist; sourceTree = "<group>"; };
-		BE4CC16B1E4F4F450013E245 /* InformBureau.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InformBureau.swift; sourceTree = "<group>"; };
 		DD75027A1C68FCFC006590AF /* Alba-macOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Alba-macOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD75028D1C690C7A006590AF /* Alba-tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Alba-tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -179,7 +179,7 @@
 				7C0812481DE4680100A49B21 /* Observable.swift */,
 				7C0812491DE4680100A49B21 /* Proxy.swift */,
 				7C08124A1DE4680100A49B21 /* Publisher.swift */,
-				BE4CC16B1E4F4F450013E245 /* InformBureau.swift */,
+				7CBC662A1E5874E20033FF36 /* InformBureau.swift */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -481,7 +481,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE4CC16C1E4F4F450013E245 /* InformBureau.swift in Sources */,
+				7CBC662B1E5874E20033FF36 /* InformBureau.swift in Sources */,
 				7C0812571DE4680100A49B21 /* Proxy.swift in Sources */,
 				7C08124B1DE4680100A49B21 /* Alba.swift in Sources */,
 				7C0812531DE4680100A49B21 /* Observable.swift in Sources */,
@@ -502,7 +502,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE4CC16E1E4F4FA20013E245 /* InformBureau.swift in Sources */,
+				7CBC662D1E5874ED0033FF36 /* InformBureau.swift in Sources */,
 				7C0812591DE4680100A49B21 /* Proxy.swift in Sources */,
 				7C08124D1DE4680100A49B21 /* Alba.swift in Sources */,
 				7C0812551DE4680100A49B21 /* Observable.swift in Sources */,
@@ -515,7 +515,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE4CC16F1E4F4FA20013E245 /* InformBureau.swift in Sources */,
+				7CBC662E1E5874ED0033FF36 /* InformBureau.swift in Sources */,
 				7C08125A1DE4680100A49B21 /* Proxy.swift in Sources */,
 				7C08124E1DE4680100A49B21 /* Alba.swift in Sources */,
 				7C0812561DE4680100A49B21 /* Observable.swift in Sources */,
@@ -528,7 +528,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE4CC16D1E4F4FA20013E245 /* InformBureau.swift in Sources */,
+				7CBC662C1E5874ED0033FF36 /* InformBureau.swift in Sources */,
 				7C0812581DE4680100A49B21 /* Proxy.swift in Sources */,
 				7C08124C1DE4680100A49B21 /* Alba.swift in Sources */,
 				7C0812541DE4680100A49B21 /* Observable.swift in Sources */,
