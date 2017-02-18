@@ -22,7 +22,7 @@
  *  SOFTWARE.
  */
 
-public struct ProxyPayload {
+public struct ProxyPayload : InformBureauPayload {
     
     public enum Entry {
         case publisherLabel(String)
@@ -34,24 +34,10 @@ public struct ProxyPayload {
         case listened(eventType: String)
     }
     
-    public private(set) var entries: [Entry]
+    public var entries: [Entry]
     
-    init(entries: [Entry]) {
+    public init(entries: [Entry]) {
         self.entries = entries
-    }
-    
-    func adding(entry: @autoclosure () -> Entry) -> ProxyPayload {
-        if InformBureau.isEnabled {
-            var updatedEntries = entries
-            updatedEntries.append(entry())
-            return ProxyPayload(entries: updatedEntries)
-        } else {
-            return .empty
-        }
-    }
-    
-    static var empty: ProxyPayload {
-        return ProxyPayload(entries: [])
     }
     
 }
@@ -61,20 +47,24 @@ public struct PublisherProxy<Event> {
     fileprivate let _subscribe: (ObjectIdentifier, @escaping EventHandler<Event>) -> ()
     fileprivate let _unsubscribe: (ObjectIdentifier) -> ()
     internal let payload: ProxyPayload
+    internal let _submitName: (ObjectIdentifier, String) -> ()
     
     public init(subscribe: @escaping (ObjectIdentifier, @escaping EventHandler<Event>) -> (),
                 unsubscribe: @escaping (ObjectIdentifier) -> ()) {
         self._subscribe = subscribe
         self._unsubscribe = unsubscribe
         self.payload = .empty
+        self._submitName = { _ in }
     }
     
     internal init(subscribe: @escaping (ObjectIdentifier, @escaping EventHandler<Event>) -> (),
                   unsubscribe: @escaping (ObjectIdentifier) -> (),
-                  payload: ProxyPayload) {
+                  payload: ProxyPayload,
+                  submitName: @escaping (ObjectIdentifier, String) -> ()) {
         self._subscribe = subscribe
         self._unsubscribe = unsubscribe
         self.payload = payload
+        self._submitName = submitName
     }
     
 //    public var signed: SignedPublisherProxy<Event> {
@@ -87,6 +77,7 @@ public struct PublisherProxy<Event> {
                           with producer: @escaping (Object) -> EventHandler<Event>) {
         let identifier = ObjectIdentifier(object)
         if InformBureau.isEnabled {
+            self._submitName(identifier, "\(object):\(identifier.hashValue)")
             InformBureau.submitSubscription(payload.adding(entry: .subscribed(identifier: identifier, ofType: String(describing: Object.self))))
         }
         self._subscribe(identifier, { [weak object] in
@@ -104,7 +95,9 @@ public struct PublisherProxy<Event> {
                 if condition(event) { handle(event) }
             }
             self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe, payload: payload.adding(entry: .filtered))
+        }, unsubscribe: self._unsubscribe,
+           payload: payload.adding(entry: .filtered),
+           submitName: _submitName)
     }
     
     public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> PublisherProxy<OtherEvent> {
@@ -113,8 +106,10 @@ public struct PublisherProxy<Event> {
                 handle(transform(event))
             }
             self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe, payload: payload.adding(entry: .mapped(fromType: String.init(describing: Event.self),
-                                                                                  toType: String.init(describing: OtherEvent.self))))
+        }, unsubscribe: self._unsubscribe,
+           payload: payload.adding(entry: .mapped(fromType: String.init(describing: Event.self),
+                                                  toType: String.init(describing: OtherEvent.self))),
+           submitName: _submitName)
     }
     
     public func flatMap<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent?) -> PublisherProxy<OtherEvent> {
@@ -123,14 +118,18 @@ public struct PublisherProxy<Event> {
                 if let transformed = transform(event) { handle(transformed) }
             }
             self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe, payload: payload.adding(entry: .mapped(fromType: String.init(describing: Event.self),
-                                                                                  toType: String.init(describing: OtherEvent.self))))
+        }, unsubscribe: self._unsubscribe,
+           payload: payload.adding(entry: .mapped(fromType: String.init(describing: Event.self),
+                                                  toType: String.init(describing: OtherEvent.self))),
+           submitName: _submitName)
     }
     
     public func interrupted(with work: @escaping (Event) -> ()) -> PublisherProxy<Event> {
         return PublisherProxy<Event>(subscribe: { (identifier, handle) in
             self._subscribe(identifier, { work($0); handle($0) })
-        }, unsubscribe: self._unsubscribe, payload: payload.adding(entry: .interrupted))
+        }, unsubscribe: self._unsubscribe,
+           payload: payload.adding(entry: .interrupted),
+           submitName: _submitName)
     }
     
     public func redirect<Publisher : PublisherProtocol>(to publisher: Publisher) where Publisher.Event == Event {
@@ -141,10 +140,12 @@ public struct PublisherProxy<Event> {
     }
     
     public func listen(with handler: @escaping EventHandler<Event>) {
+        let listener = NotGoingBasicListener<Event>(subscribingTo: self, handler)
+        let identifier = ObjectIdentifier(listener)
         if InformBureau.isEnabled {
+            self._submitName(identifier, "Listener<\(Event.self)>:\(identifier.hashValue)")
             InformBureau.submitSubscription(payload.adding(entry: .listened(eventType: String.init(describing: Event.self))))
         }
-        _ = NotGoingBasicListener<Event>(subscribingTo: self, handler)
     }
     
     public func void() -> PublisherProxy<Void> {
@@ -211,36 +212,23 @@ public extension PublisherProxy where Event : SignedProtocol {
     }
     
     func filterValue(_ condition: @escaping (Event.Wrapped) -> Bool) -> PublisherProxy<Event> {
-        return PublisherProxy<Event>(subscribe: { (identifier, handle) in
-            let handler: EventHandler<Event> = { event in
-                if condition(event.value) { handle(event) }
-            }
-            self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe, payload: payload.adding(entry: .filtered))
+        return filter({ condition($0.value) })
     }
     
     func mapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent) -> PublisherProxy<Signed<OtherEvent>> {
-        return PublisherProxy<Signed<OtherEvent>>(subscribe: { (identifier, handle) in
-            let handler: EventHandler<Event> = { event in
-                let newEvent = Signed<OtherEvent>(transform(event.value), event.submittedBy)
-                handle(newEvent)
-            }
-            self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe, payload: payload.adding(entry: .mapped(fromType: String.init(describing: Event.self),
-                                                                                  toType: String.init(describing: OtherEvent.self))))
+        return map({ (event) in
+            let transformed = transform(event.value)
+            let signed = Signed.init(transformed, event.submittedBy)
+            return signed
+        })
     }
     
     func flatMapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent?) -> PublisherProxy<Signed<OtherEvent>> {
-        return PublisherProxy<Signed<OtherEvent>>(subscribe: { (identifier, handle) in
-            let handler: EventHandler<Event> = { event in
-                if let newValue = transform(event.value) {
-                    let newEvent = Signed<OtherEvent>(newValue, event.submittedBy)
-                    handle(newEvent)
-                }
-            }
-            self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe, payload: payload.adding(entry: .mapped(fromType: String.init(describing: Event.self),
-                                                                                  toType: String.init(describing: OtherEvent.self))))
+        return flatMap({ (event) in
+            let transformed = transform(event.value)
+            let signed = transformed.map({ Signed.init($0, event.submittedBy) })
+            return signed
+        })
     }
     
     var unsigned: PublisherProxy<Event.Wrapped> {
@@ -255,7 +243,8 @@ public extension PublisherProxy {
         let payload = ProxyPayload.empty.adding(entry: .publisherLabel("WARNING: Empty proxy"))
         return PublisherProxy<Event>(subscribe: { _ in },
                                      unsubscribe: { _ in },
-                                     payload: payload)
+                                     payload: payload,
+                                     submitName: { _ in })
     }
     
 }

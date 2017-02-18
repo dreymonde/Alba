@@ -6,6 +6,34 @@
 //  Copyright © 2017 John Sundell. All rights reserved.
 //
 
+public protocol InformBureauPayload {
+    
+    associatedtype Entry
+    
+    init(entries: [Entry])
+    
+    var entries: [Entry] { get set }
+    
+}
+
+public extension InformBureauPayload {
+    
+    func adding(entry: @autoclosure () -> Entry) -> Self {
+        if InformBureau.isEnabled {
+            var updatedEntries = entries
+            updatedEntries.append(entry())
+            return Self(entries: updatedEntries)
+        } else {
+            return .empty
+        }
+    }
+    
+    static var empty: Self {
+        return Self(entries: [])
+    }
+    
+}
+
 fileprivate class InformBureauPublisher<Event> : Subscribable {
     
     var handlers: [EventHandler<Event>] = []
@@ -18,7 +46,8 @@ fileprivate class InformBureauPublisher<Event> : Subscribable {
         let payload = ProxyPayload.empty.adding(entry: .publisherLabel("Alba.InformBureau (\(Event.self))"))
         return PublisherProxy(subscribe: { self.handlers.append($0.1) },
                               unsubscribe: { _ in },
-                              payload: payload)
+                              payload: payload,
+                              submitName: { _ in })
     }
     
 }
@@ -26,7 +55,7 @@ fileprivate class InformBureauPublisher<Event> : Subscribable {
 public class InformBureau {
     
     public typealias SubscriptionLogMessage = ProxyPayload
-    public typealias PublishingLogMessage = String
+    public typealias PublishingLogMessage = PublishingPayload
     public typealias GeneralWarningLogMessage = String
     
     public static var isEnabled = false
@@ -37,7 +66,7 @@ public class InformBureau {
     }
     
     fileprivate static let publishingPublisher = InformBureauPublisher<PublishingLogMessage>()
-    fileprivate static var didPublish: PublisherProxy<PublishingLogMessage> {
+    public static var didPublish: PublisherProxy<PublishingLogMessage> {
         return publishingPublisher.proxy
     }
     
@@ -70,6 +99,7 @@ public class InformBureau {
                 return
             }
             InformBureau.didSubscribe.subscribe(shared, with: Logger.logSub)
+            InformBureau.didPublish.subscribe(shared, with: Logger.logPub)
             InformBureau.generalWarnings.subscribe(shared, with: Logger.logGeneralWarning)
         }
         
@@ -97,7 +127,16 @@ public class InformBureau {
         }
         
         func logPub(_ logMessage: PublishingLogMessage) {
-            print("(P) " + logMessage)
+            let mark = "(P) "
+            print("")
+            for entry in logMessage.entries {
+                switch entry {
+                case .published(publisherLabel: let publisherLabel, event: let event):
+                    print(mark + "\(publisherLabel) published \(event)")
+                case .handled(handlerLabel: let handlerLabel):
+                    print(mark + "--> handled by \(handlerLabel)")
+                }
+            }
         }
         
         func logGeneralWarning(_ logMessage: GeneralWarningLogMessage) {
