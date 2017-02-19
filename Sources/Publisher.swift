@@ -69,7 +69,8 @@ public class Publisher<Event> : PublisherProtocol {
     
     public init(label: String = "unnamed") {
         self.proxy = PublisherProxy.empty()
-        let initialPayload = ProxyPayload.empty.adding(entry: .publisherLabel("\(String.init(describing: Publisher<Event>.self)):\(label)"))
+        let descriptiveLabel = "\(label) (\(Publisher<Event>.self))"
+        let initialPayload = ProxyPayload.empty.adding(entry: .publisherLabel(descriptiveLabel))
         self.label = label
         self.proxy = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
                                     unsubscribe: { self.subscribers[$0] = nil },
@@ -84,7 +85,8 @@ public class Publisher<Event> : PublisherProtocol {
             subscribers.values.forEach({ handle in handle(event) })
         } else {
             var payload = PublishingPayload.empty
-            payload.entries.append(.published(publisherLabel: "\(self):\(label)", event: "\(event)"))
+            let descriptiveLabel = "\(label) (\(Publisher<Event>.self))"
+            payload.entries.append(.published(publisherLabel: descriptiveLabel, event: "\(event)"))
             subscribers.forEach { identifier, handle in
                 handle(event)
                 if let name = names[identifier] {

@@ -98,14 +98,21 @@ public class InformBureau {
                 print("Enable Alba.InformBureau first")
                 return
             }
-            InformBureau.didSubscribe.subscribe(shared, with: Logger.logSub)
+            InformBureau.didSubscribe.subscribe(shared, with: Logger.logSub_def)
             InformBureau.didPublish.subscribe(shared, with: Logger.logPub)
             InformBureau.generalWarnings.subscribe(shared, with: Logger.logGeneralWarning)
         }
         
-        func logSub(_ logMessage: SubscriptionLogMessage) {
-            let mark = "(S) "
-            print("")
+        func logSub_def(_ logMessage: SubscriptionLogMessage) {
+            logSub(logMessage)
+        }
+        
+        func logSub(_ logMessage: SubscriptionLogMessage, mergeLevel: Int = 0) {
+            let mergeInset: String = (0 ..< mergeLevel).reduce("", { $0.0 + "   " })
+            let mark = "(S) " + mergeInset
+            if mergeLevel == 0 {
+                print("")
+            }
             for entry in logMessage.entries {
                 switch entry {
                 case .publisherLabel(let label):
@@ -122,6 +129,9 @@ public class InformBureau {
                     print(mark + "!-> subscribed by \(type):\(identifier.hashValue)")
                 case .listened(let type):
                     print(mark + "!-> listened with EventHandler<\(type)>")
+                case .merged(otherPayload: let other):
+                    print(mark + "merged with:")
+                    logSub(other, mergeLevel: mergeLevel + 1)
                 }
             }
         }

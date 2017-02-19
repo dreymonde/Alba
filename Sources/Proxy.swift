@@ -32,6 +32,7 @@ public struct ProxyPayload : InformBureauPayload {
         case redirected(to: String)
         case subscribed(identifier: ObjectIdentifier, ofType: String)
         case listened(eventType: String)
+        case merged(otherPayload: ProxyPayload)
     }
     
     public var entries: [Entry]
@@ -130,6 +131,20 @@ public struct PublisherProxy<Event> {
         }, unsubscribe: self._unsubscribe,
            payload: payload.adding(entry: .interrupted),
            submitName: _submitName)
+    }
+    
+    public func merged(with other: PublisherProxy<Event>) -> PublisherProxy<Event> {
+        return PublisherProxy<Event>(subscribe: { (identifier, handle) in
+            self._subscribe(identifier, handle)
+            other._subscribe(identifier, handle)
+        }, unsubscribe: { (identifier) in
+            self._unsubscribe(identifier)
+            other._unsubscribe(identifier)
+        }, payload: payload.adding(entry: .merged(otherPayload: other.payload)),
+           submitName: { (identifier, label) in
+            self._submitName(identifier, label)
+            other._submitName(identifier, label)
+        })
     }
     
     public func redirect<Publisher : PublisherProtocol>(to publisher: Publisher) where Publisher.Event == Event {
