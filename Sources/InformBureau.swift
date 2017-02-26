@@ -34,7 +34,7 @@ public extension InformBureauPayload {
     
 }
 
-fileprivate class InformBureauPublisher<Event> : Subscribable {
+fileprivate final class InformBureauPublisher<Event> : Subscribable {
     
     var handlers: [EventHandler<Event>] = []
     
@@ -46,13 +46,12 @@ fileprivate class InformBureauPublisher<Event> : Subscribable {
         let payload = ProxyPayload.empty.adding(entry: .publisherLabel("Alba.InformBureau (\(Event.self))"))
         return PublisherProxy(subscribe: { self.handlers.append($0.1) },
                               unsubscribe: { _ in },
-                              payload: payload,
-                              submitName: { _ in })
+                              payload: payload)
     }
     
 }
 
-public class InformBureau {
+public final class InformBureau {
     
     public typealias SubscriptionLogMessage = ProxyPayload
     public typealias PublishingLogMessage = PublishingPayload
@@ -87,7 +86,7 @@ public class InformBureau {
         generalWarningsPublisher.publish(logMessage)
     }
     
-    public class Logger {
+    public final class Logger {
         
         static let shared = Logger()
         
@@ -101,6 +100,12 @@ public class InformBureau {
             InformBureau.didSubscribe.subscribe(shared, with: Logger.logSub)
             InformBureau.didPublish.subscribe(shared, with: Logger.logPub)
             InformBureau.generalWarnings.subscribe(shared, with: Logger.logGeneralWarning)
+        }
+        
+        public static func disable() {
+            InformBureau.didSubscribe.unsafe.unsubscribe(self)
+            InformBureau.didPublish.unsafe.unsubscribe(self)
+            InformBureau.generalWarnings.unsafe.unsubscribe(self)
         }
         
         func logSub(_ logMessage: SubscriptionLogMessage) {

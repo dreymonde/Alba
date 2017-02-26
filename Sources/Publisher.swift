@@ -63,8 +63,6 @@ public class Publisher<Event> : PublisherProtocol {
     
     public var subscribers: [ObjectIdentifier : EventHandler<Event>] = [:]
     
-    internal var names: [ObjectIdentifier : String] = [:]
-    
     public var label: String
     
     public init(label: String = "unnamed") {
@@ -73,8 +71,7 @@ public class Publisher<Event> : PublisherProtocol {
         self.label = label
         self.proxy = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
                                     unsubscribe: { self.subscribers[$0] = nil },
-                                    payload: initialPayload,
-                                    submitName: { self.assignName($0.1, toObjectWith: $0.0) })
+                                    payload: initialPayload)
     }
     
     public private(set) var proxy: PublisherProxy<Event>
@@ -87,9 +84,6 @@ public class Publisher<Event> : PublisherProtocol {
             payload.entries.append(.published(publisherLabel: "\(self):\(label)", event: "\(event)"))
             subscribers.forEach { identifier, handle in
                 handle(event)
-                if let name = names[identifier] {
-                    payload.entries.append(PublishingPayload.Entry.handled(handlerLabel: name))
-                }
             }
             InformBureau.submitPublishing(payload)
         }
@@ -108,16 +102,6 @@ public struct PublishingPayload : InformBureauPayload {
     
     public init(entries: [Entry]) {
         self.entries = entries
-    }
-    
-}
-
-internal extension Publisher {
-    
-    func assignName(_ name: String, toObjectWith identifier: ObjectIdentifier) {
-        if InformBureau.isEnabled {
-            names[identifier] = name
-        }
     }
     
 }
