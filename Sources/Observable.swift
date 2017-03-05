@@ -31,7 +31,7 @@ public struct Observable<Value> {
     }
     
     fileprivate let publisher = Publisher<Value>()
-    public let proxy: PublisherProxy<Value>
+    public let proxy: Subscribe<Value>
     
     public init(_ value: Value) {
         self.value = value

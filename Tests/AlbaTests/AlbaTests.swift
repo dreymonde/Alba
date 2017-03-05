@@ -123,10 +123,10 @@ class AlbaTests: XCTestCase {
     }
     
     class DEA {
-        let proxy: PublisherProxy<Int>
-        let sproxy: SignedPublisherProxy<Int>
+        let proxy: Subscribe<Int>
+        let sproxy: SignedSubscribe<Int>
         let deinitBlock: () -> ()
-        init(proxy: PublisherProxy<Int>, sproxy: SignedPublisherProxy<Int>, signed: Bool = false, deinitBlock: @escaping () -> ()) {
+        init(proxy: Subscribe<Int>, sproxy: SignedSubscribe<Int>, signed: Bool = false, deinitBlock: @escaping () -> ()) {
             self.proxy = proxy
             self.sproxy = sproxy
             self.deinitBlock = deinitBlock
@@ -293,7 +293,7 @@ class AlbaTests: XCTestCase {
     }
     
     func testWarning() {
-        let proxy = PublisherProxy<Int>.empty()
+        let proxy = Subscribe<Int>.empty()
         let obj = Hand()
         let expectation = self.expectation(description: "on warning")
         Alba.InformBureau.didSubscribe

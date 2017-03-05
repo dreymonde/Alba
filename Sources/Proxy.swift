@@ -42,7 +42,7 @@ public struct ProxyPayload : InformBureauPayload {
     
 }
 
-public struct PublisherProxy<Event> {
+public struct Subscribe<Event> {
     
     fileprivate let _subscribe: (ObjectIdentifier, @escaping EventHandler<Event>) -> ()
     fileprivate let _unsubscribe: (ObjectIdentifier) -> ()
@@ -64,8 +64,8 @@ public struct PublisherProxy<Event> {
         self.payload = payload
     }
     
-//    public var signed: SignedPublisherProxy<Event> {
-//        return SignedPublisherProxy<Event>(subscribe: { (identifier, handler) in
+//    public var signed: SignedSubscribe<Event> {
+//        return SignedSubscribe<Event>(subscribe: { (identifier, handler) in
 //            self._subscribe(identifier, unsigned(handler))
 //        }, unsubscribe: self._unsubscribe)
 //    }
@@ -85,8 +85,8 @@ public struct PublisherProxy<Event> {
         })
     }
     
-    public func filter(_ condition: @escaping (Event) -> Bool) -> PublisherProxy<Event> {
-        return PublisherProxy<Event>(subscribe: { (identifier, handle) in
+    public func filter(_ condition: @escaping (Event) -> Bool) -> Subscribe<Event> {
+        return Subscribe<Event>(subscribe: { (identifier, handle) in
             let handler: EventHandler<Event> = { event in
                 if condition(event) { handle(event) }
             }
@@ -95,8 +95,8 @@ public struct PublisherProxy<Event> {
            payload: payload.adding(entry: .filtered))
     }
     
-    public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> PublisherProxy<OtherEvent> {
-        return PublisherProxy<OtherEvent>(subscribe: { (identifier, handle) in
+    public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> Subscribe<OtherEvent> {
+        return Subscribe<OtherEvent>(subscribe: { (identifier, handle) in
             let handler: EventHandler<Event> = { event in
                 handle(transform(event))
             }
@@ -106,8 +106,8 @@ public struct PublisherProxy<Event> {
                                                   toType: String.init(describing: OtherEvent.self))))
     }
     
-    public func flatMap<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent?) -> PublisherProxy<OtherEvent> {
-        return PublisherProxy<OtherEvent>(subscribe: { (identifier, handle) in
+    public func flatMap<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent?) -> Subscribe<OtherEvent> {
+        return Subscribe<OtherEvent>(subscribe: { (identifier, handle) in
             let handler: EventHandler<Event> = { event in
                 if let transformed = transform(event) { handle(transformed) }
             }
@@ -117,8 +117,8 @@ public struct PublisherProxy<Event> {
                                                   toType: String.init(describing: OtherEvent.self))))
     }
     
-    public func interrupted(with work: @escaping (Event) -> ()) -> PublisherProxy<Event> {
-        return PublisherProxy<Event>(subscribe: { (identifier, handle) in
+    public func interrupted(with work: @escaping (Event) -> ()) -> Subscribe<Event> {
+        return Subscribe<Event>(subscribe: { (identifier, handle) in
             self._subscribe(identifier, { work($0); handle($0) })
         }, unsubscribe: self._unsubscribe,
            payload: payload.adding(entry: .interrupted))
@@ -138,19 +138,19 @@ public struct PublisherProxy<Event> {
         }
     }
     
-    public func void() -> PublisherProxy<Void> {
+    public func void() -> Subscribe<Void> {
         return map({ _ in })
     }
     
-    public var unsafe: UnsafePublisherProxy<Event> {
-        return UnsafePublisherProxy(proxy: self)
+    public var unsafe: UnsafeSubscribe<Event> {
+        return UnsafeSubscribe(proxy: self)
     }
     
 }
 
-public struct UnsafePublisherProxy<Event> {
+public struct UnsafeSubscribe<Event> {
     
-    fileprivate let proxy: PublisherProxy<Event>
+    fileprivate let proxy: Subscribe<Event>
     
     public func subscribe(_ object: AnyObject, with subscription: @escaping EventHandler<Event>) {
         let identifier = ObjectIdentifier(object)
@@ -173,7 +173,7 @@ public struct UnsafePublisherProxy<Event> {
     
 }
 
-public extension PublisherProxy where Event : SignedProtocol {
+public extension Subscribe where Event : SignedProtocol {
     
     public func subscribe<Object : AnyObject>(_ object: Object,
                           with producer: @escaping (Object) -> EventHandler<(Event.Wrapped, submitterIdentifier: ObjectIdentifier?)>) {
@@ -201,11 +201,11 @@ public extension PublisherProxy where Event : SignedProtocol {
         })
     }
     
-    func filterValue(_ condition: @escaping (Event.Wrapped) -> Bool) -> PublisherProxy<Event> {
+    func filterValue(_ condition: @escaping (Event.Wrapped) -> Bool) -> Subscribe<Event> {
         return filter({ condition($0.value) })
     }
     
-    func mapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent) -> PublisherProxy<Signed<OtherEvent>> {
+    func mapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent) -> Subscribe<Signed<OtherEvent>> {
         return map({ (event) in
             let transformed = transform(event.value)
             let signed = Signed.init(transformed, event.submittedBy)
@@ -213,7 +213,7 @@ public extension PublisherProxy where Event : SignedProtocol {
         })
     }
     
-    func flatMapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent?) -> PublisherProxy<Signed<OtherEvent>> {
+    func flatMapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent?) -> Subscribe<Signed<OtherEvent>> {
         return flatMap({ (event) in
             let transformed = transform(event.value)
             let signed = transformed.map({ Signed.init($0, event.submittedBy) })
@@ -221,21 +221,21 @@ public extension PublisherProxy where Event : SignedProtocol {
         })
     }
     
-    var unsigned: PublisherProxy<Event.Wrapped> {
+    var unsigned: Subscribe<Event.Wrapped> {
         return self.map({ $0.value })
     }
     
 }
 
-public extension PublisherProxy {
+public extension Subscribe {
     
-    static func empty() -> PublisherProxy<Event> {
+    static func empty() -> Subscribe<Event> {
         let payload = ProxyPayload.empty.adding(entry: .publisherLabel("WARNING: Empty proxy"))
-        return PublisherProxy<Event>(subscribe: { _ in },
+        return Subscribe<Event>(subscribe: { _ in },
                                      unsubscribe: { _ in },
                                      payload: payload)
     }
     
 }
 
-public typealias SignedPublisherProxy<Event> = PublisherProxy<Signed<Event>>
+public typealias SignedSubscribe<Event> = Subscribe<Signed<Event>>
