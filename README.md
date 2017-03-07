@@ -183,12 +183,16 @@ Alba.InformBureau.isEnabled = true
 Alba.OSLogger.enable()
 ```
 
+In order for `os_log` to work, you should also do [this](http://stackoverflow.com/a/40744462/5569590).
+
+Now you can see **Alba** logs of your program in a **Console** application.
+
 ## Installation
 
 **Alba** is available through [Carthage][carthage-url]. To install, just write into your Cartfile:
 
 ```ruby
-github "dreymonde/Alba" ~> 0.3.2
+github "dreymonde/Alba" ~> 0.3.3
 ```
 
 You can also use SwiftPM. Just add to your `Package.swift`:
