@@ -61,11 +61,12 @@ public final class OSLogger {
             }
         }
         if let publisherLabel = publisherLabel, let subscription = subscription {
+            let logType: OSLogType = publisherLabel.0 == ProxyPayload.Entry.emptyProxyLabel ? .error : .debug
             switch subscription {
             case .byObject(identifier: let identifier, ofType: let type):
                 os_log("%@ (%@) subscribed by %@:%@",
                        log: subLog,
-                       type: .debug,
+                       type: logType,
                        publisherLabel.0 as NSString,
                        String(describing: publisherLabel.1) as NSString,
                        String(describing: type) as NSString,
@@ -73,7 +74,7 @@ public final class OSLogger {
             case .redirection(to: let label, ofType: let type):
                 os_log("%@ (%@) redirected to %@ (%@)",
                        log: subLog,
-                       type: .debug,
+                       type: logType,
                        publisherLabel.0 as NSString,
                        String(describing: publisherLabel.1) as NSString,
                        label as NSString,

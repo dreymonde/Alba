@@ -65,6 +65,8 @@ public struct ProxyPayload : InformBureauPayload {
             return .custom("interrupted")
         }
         
+        static let emptyProxyLabel = "WARNING: Empty proxy"
+        
     }
     
     public var entries: [Entry]
@@ -277,7 +279,7 @@ public extension Subscribe where Event : SignedProtocol {
 public extension Subscribe {
     
     static func empty() -> Subscribe<Event> {
-        let payload = ProxyPayload.empty.adding(entry: .publisherLabel("WARNING: Empty proxy", type: Subscribe<Event>.self))
+        let payload = ProxyPayload.empty.adding(entry: .publisherLabel(ProxyPayload.Entry.emptyProxyLabel, type: Subscribe<Event>.self))
         return Subscribe<Event>(subscribe: { _ in },
                                      unsubscribe: { _ in },
                                      payload: payload)

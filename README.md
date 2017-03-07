@@ -101,15 +101,86 @@ public func rawModify<OtherEvent>(subscribe: (ObjectIdentifier, EventHandler<Oth
 Here is, for example, how you can implement `map`:
 
 ```swift
-public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> Subscribe<OtherEvent> {
-    return rawModify(subscribe: { (identifier, handle) in
-        let handler: EventHandler<Event> = { event in
-            handle(transform(event))
-        }
-        self._subscribe(identifier, handler)
-    }, entry: .mapped(fromType: String.init(describing: Event.self),
-                      toType: String.init(describing: OtherEvent.self)))
+public extension Subscribe {
+    
+    public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> Subscribe<OtherEvent> {
+        return rawModify(subscribe: { (identifier, handle) in
+            let handler: EventHandler<Event> = { event in
+                handle(transform(event))
+            }
+            self._subscribe(identifier, handler)
+        }, entry: .transformation(label: "mapped", .transformed(fromType: Event.self, toType: OtherEvent.self)))
+    }
+    
 }
+```
+
+`entry` here is purely for debugging purposes -- you're describing the intention of your method.
+
+### Inform Bureau
+
+One of the main drawbacks of the functional-reactive style is an elevated level of indirection -- you can't easily detect the information flow in your application. **Alba** aims to solve this problem with the help of a handy feature called *Inform Bureau*. Inform Bureau collects information about every subscription and publishing inside your application, so it's easy for you to detect what's actually going on (and to detect any problems easily, of course).
+
+#### Enabling Inform Bureau
+
+Inform Bureau is an optional feature, so it should be enabled in your code in order to work. It's actually just one line of code -- make sure to put this in your `AppDelegate`'s `init` (`application(_:didFinishLaunchingWithOptions)` is too late):
+
+```swift
+Alba.InformBureau.isEnabled = true
+```
+
+Just this line will no have any immediate effect -- in order for Inform Bureau to become useful, you should also enable it's `Logger`:
+
+```swift
+Alba.InformBureau.Logger.enable()
+```
+
+And that's it! Now you're going to see beautiful messages like these in your output:
+
+```
+(S) ManagedObjectContextObserver.changes (Publisher<(NSChangeSet, Int)>)
+(S) --> mapped from (NSChangeSet, Int) to NSSpecificChangeSet<CleaningPoint>
+(S) !-> subscribed by PointsListViewController:4929411136
+```
+
+```
+(S) +AppDelegate.applicationWillTerminate (Publisher<UIApplication>)
+(S) --> mapped from UIApplication to ()
+(S) merged with:
+(S)    +AppDelegate.applicationDidEnterBackground (Publisher<UIApplication>)
+(S)    --> mapped from UIApplication to ()
+(S) !-> subscribed by ContextSaver:6176536960
+```
+
+```
+(P) ContextSaver.didSaveContext (Publisher<()>) published ()
+```
+
+*Hint*: `(S)` are subscriptions events, and `(P)` are publications.
+
+#### Getting your code ready for Inform Bureau
+
+Inform Bureau can be enabled with two lines of code. However, in order for it to be useful, there is a little amount of work required from you. First and foremost, you should create all your publishers with descriptive `label`:
+
+```swift
+let didFailToSaveImage = Publisher<Error>(label: "ImageSaver.didFailToSaveImage")
+```
+
+You should name your publishers using the next convention: `[type_name].[publisher_name]`
+
+If your publisher is declared as `static`, then add `+` to the beginning:
+
+```swift
+static let applicationWillTerminate = Publisher<UIApplication>(label: "+AppDelegate.applicationWillTerminate")
+```
+
+#### OSLogger
+
+**Alba**'s Inform Bureau takes full advantage of Apple's latest [Unified Logging][unified-logging-wwdc] system. The support for this system comes via `Alba.OSLogger` object. If you want your app to write **Alba** logs via `os_log`, enable it after enabling `InformBureau`:
+
+```swift
+Alba.InformBureau.isEnabled = true
+Alba.OSLogger.enable()
 ```
 
 ## Installation
@@ -117,7 +188,7 @@ public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> Sub
 **Alba** is available through [Carthage][carthage-url]. To install, just write into your Cartfile:
 
 ```ruby
-github "AdvancedOperations/Operations" ~> 0.5.0
+github "dreymonde/Alba" ~> 0.3.2
 ```
 
 You can also use SwiftPM. Just add to your `Package.swift`:
@@ -127,7 +198,7 @@ import PackageDescription
 
 let package = Package(
     dependencies: [
-        .Package(url: "https://github.com/Zewo/Mapper.git", majorVersion: 0, minor: 1),
+        .Package(url: "https://github.com/dreymonde/Alba.git", majorVersion: 0, minor: 3),
     ]
 )
 ```
@@ -141,3 +212,6 @@ let package = Package(
 - Review any other pull request (very appreciated!), since no change to this project is made without a PR.
 
 Actually, any help is welcomed! Feel free to contact us, ask questions and propose new ideas. If you don't want to raise a public issue, you can reach me at [dreymonde@me.com](mailto:dreymonde@me.com).
+
+[carthage-url]: https://github.com/Carthage/Carthage
+[unified-logging-wwdc]: https://developer.apple.com/videos/play/wwdc2016/721/
