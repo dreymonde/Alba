@@ -86,43 +86,46 @@ public struct Subscribe<Event> {
         })
     }
     
+    public func rawModify<OtherEvent>(subscribe: @escaping (ObjectIdentifier, @escaping EventHandler<OtherEvent>) -> (),
+                             entry: ProxyPayload.Entry) -> Subscribe<OtherEvent> {
+        return Subscribe<OtherEvent>(subscribe: subscribe,
+                                     unsubscribe: self._unsubscribe,
+                                     payload: payload.adding(entry: entry))
+    }
+    
     public func filter(_ condition: @escaping (Event) -> Bool) -> Subscribe<Event> {
-        return Subscribe<Event>(subscribe: { (identifier, handle) in
+        return rawModify(subscribe: { (identifier, handle) in
             let handler: EventHandler<Event> = { event in
                 if condition(event) { handle(event) }
             }
             self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe,
-           payload: payload.adding(entry: .filtered))
+        }, entry: .filtered)
     }
     
     public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> Subscribe<OtherEvent> {
-        return Subscribe<OtherEvent>(subscribe: { (identifier, handle) in
+        return rawModify(subscribe: { (identifier, handle) in
             let handler: EventHandler<Event> = { event in
                 handle(transform(event))
             }
             self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe,
-           payload: payload.adding(entry: .mapped(fromType: String.init(describing: Event.self),
-                                                  toType: String.init(describing: OtherEvent.self))))
+        }, entry: .mapped(fromType: String.init(describing: Event.self),
+                          toType: String.init(describing: OtherEvent.self)))
     }
     
     public func flatMap<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent?) -> Subscribe<OtherEvent> {
-        return Subscribe<OtherEvent>(subscribe: { (identifier, handle) in
+        return rawModify(subscribe: { (identifier, handle) in
             let handler: EventHandler<Event> = { event in
                 if let transformed = transform(event) { handle(transformed) }
             }
             self._subscribe(identifier, handler)
-        }, unsubscribe: self._unsubscribe,
-           payload: payload.adding(entry: .mapped(fromType: String.init(describing: Event.self),
-                                                  toType: String.init(describing: OtherEvent.self))))
+        }, entry: .mapped(fromType: String.init(describing: Event.self),
+                          toType: String.init(describing: OtherEvent.self)))
     }
     
     public func interrupted(with work: @escaping (Event) -> ()) -> Subscribe<Event> {
-        return Subscribe<Event>(subscribe: { (identifier, handle) in
+        return rawModify(subscribe: { (identifier, handle) in
             self._subscribe(identifier, { work($0); handle($0) })
-        }, unsubscribe: self._unsubscribe,
-           payload: payload.adding(entry: .interrupted))
+        }, entry: .interrupted)
     }
     
     public func merged(with other: Subscribe<Event>) -> Subscribe<Event> {

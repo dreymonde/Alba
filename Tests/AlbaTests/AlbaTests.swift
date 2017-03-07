@@ -273,7 +273,7 @@ class AlbaTests: XCTestCase {
     
     func testMapValue() {
 //        let signed = SignedPublisher<Int>()
-//        let strsgn = signed.proxy.mapValue(String.init)
+//        let strsgn = signed.proxy.mod_mapValue(String.init)
     }
     
     class Hand {
