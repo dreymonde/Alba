@@ -308,4 +308,25 @@ class AlbaTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
     }
     
+    func testMerged() {
+        let first = Publisher<Int>(label: "testMerged.first")
+        let second = Publisher<Int>(label: "testMerged.second")
+        let merged = first.proxy.merged(with: second.proxy)
+        
+        let expectation = self.expectation(description: "on merged")
+        var is5Present = false
+        merged.listen { (number) in
+            if number == 5 {
+                is5Present = true
+            }
+            if number == 10 {
+                XCTAssertTrue(is5Present)
+                expectation.fulfill()
+            }
+        }
+        first.publish(5)
+        second.publish(10)
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
+    
 }
