@@ -329,4 +329,46 @@ class AlbaTests: XCTestCase {
         waitForExpectations(timeout: 5.0, handler: nil)
     }
     
+    class Filter {
+        
+        var numbers = [1, 2, 3, 4, 5]
+        
+        func subscribe(to publisher: Subscribe<String>) {
+            publisher
+                .weak(self)
+                .map(Filter.fromString)
+                .filter(Filter.contains)
+                .subscribe(with: Filter.printNonExisting)
+        }
+        
+        func printNonExisting(_ number: Int) {
+            if number == 15 {
+                XCTFail("Filter should be deallocated at this point")
+            }
+            print(number)
+        }
+        
+        func contains(_ int: Int) -> Bool {
+            return !numbers.contains(int)
+        }
+        
+        func fromString(_ string: String) -> Int {
+            return Int(string)!
+        }
+        
+        deinit {
+            print("Deinit!")
+        }
+        
+    }
+    
+    func testWeak() {
+        let publisher = Publisher<String>(label: "testWeakFilter.publisher")
+        var filter: Filter? = Filter()
+        filter!.subscribe(to: publisher.proxy)
+        [1, 2, 3, 10, 12].map(String.init).forEach(publisher.publish)
+        filter = nil
+        publisher.publish("15")
+    }
+    
 }
