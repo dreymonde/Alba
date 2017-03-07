@@ -22,6 +22,9 @@
  *  SOFTWARE.
  */
 
+@available(*, unavailable, renamed: "Subscribe")
+public typealias PublisherProxy<T> = Subscribe<T>
+
 public struct ProxyPayload : InformBureauPayload {
     
     public enum Entry {
