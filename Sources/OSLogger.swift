@@ -92,7 +92,7 @@ public final class OSLogger {
             case .published(publisherLabel: let label, publisherType: let type, event: let event):
                 os_log("%@ (%@) published %@",
                        log: pubLog,
-                       type: .debug,
+                       type: .info,
                        label as NSString,
                        String(describing: type) as NSString,
                        (event as? NSObject) ?? String(describing: event) as NSString)
