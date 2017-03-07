@@ -26,7 +26,7 @@ public protocol Subscribable : class {
     
     associatedtype Event
     
-    var proxy: PublisherProxy<Event> { get }
+    var proxy: Subscribe<Event> { get }
     
 }
 
@@ -44,8 +44,8 @@ public protocol PublisherProtocol : class, Subscribable {
 
 public extension PublisherProtocol {
     
-    var proxy: PublisherProxy<Event> {
-        return PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
+    var proxy: Subscribe<Event> {
+        return Subscribe(subscribe: { self.subscribers[$0] = $1 },
                               unsubscribe: { self.subscribers[$0] = nil })
     }
     
@@ -66,16 +66,16 @@ public class Publisher<Event> : PublisherProtocol {
     public var label: String
     
     public init(label: String = "unnamed") {
-        self.proxy = PublisherProxy.empty()
+        self.proxy = Subscribe.empty()
         let descriptiveLabel = "\(label) (\(Publisher<Event>.self))"
         let initialPayload = ProxyPayload.empty.adding(entry: .publisherLabel(descriptiveLabel))
         self.label = label
-        self.proxy = PublisherProxy(subscribe: { self.subscribers[$0] = $1 },
+        self.proxy = Subscribe(subscribe: { self.subscribers[$0] = $1 },
                                     unsubscribe: { self.subscribers[$0] = nil },
                                     payload: initialPayload)
     }
     
-    public private(set) var proxy: PublisherProxy<Event>
+    public private(set) var proxy: Subscribe<Event>
     
     public func publish(_ event: Event) {
         if !InformBureau.isEnabled {

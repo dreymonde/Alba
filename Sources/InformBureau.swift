@@ -42,9 +42,9 @@ fileprivate final class InformBureauPublisher<Event> : Subscribable {
         handlers.forEach({ $0(event) })
     }
     
-    fileprivate var proxy: PublisherProxy<Event> {
+    fileprivate var proxy: Subscribe<Event> {
         let payload = ProxyPayload.empty.adding(entry: .publisherLabel("Alba.InformBureau (\(Event.self))"))
-        return PublisherProxy(subscribe: { self.handlers.append($0.1) },
+        return Subscribe(subscribe: { self.handlers.append($0.1) },
                               unsubscribe: { _ in },
                               payload: payload)
     }
@@ -60,17 +60,17 @@ public final class InformBureau {
     public static var isEnabled = false
         
     fileprivate static let subscriptionPublisher = InformBureauPublisher<SubscriptionLogMessage>()
-    public static var didSubscribe: PublisherProxy<SubscriptionLogMessage> {
+    public static var didSubscribe: Subscribe<SubscriptionLogMessage> {
         return subscriptionPublisher.proxy
     }
     
     fileprivate static let publishingPublisher = InformBureauPublisher<PublishingLogMessage>()
-    public static var didPublish: PublisherProxy<PublishingLogMessage> {
+    public static var didPublish: Subscribe<PublishingLogMessage> {
         return publishingPublisher.proxy
     }
     
     fileprivate static let generalWarningsPublisher = InformBureauPublisher<GeneralWarningLogMessage>()
-    public static var generalWarnings: PublisherProxy<GeneralWarningLogMessage> {
+    public static var generalWarnings: Subscribe<GeneralWarningLogMessage> {
         return generalWarningsPublisher.proxy
     }
     

@@ -24,10 +24,10 @@
 
 internal class BasicListener<Event> {
     
-    internal let publisher: PublisherProxy<Event>
+    internal let publisher: Subscribe<Event>
     internal let handler: EventHandler<Event>
     
-    internal init(subscribingTo publisher: PublisherProxy<Event>,
+    internal init(subscribingTo publisher: Subscribe<Event>,
                 _ handler: @escaping EventHandler<Event>) {
         self.publisher = publisher
         self.handler = handler
@@ -49,10 +49,10 @@ internal class BasicListener<Event> {
 
 internal class NotGoingBasicListener<Event> {
     
-    let publisher: PublisherProxy<Event>
+    let publisher: Subscribe<Event>
     let handler: EventHandler<Event>
     
-    init(subscribingTo publisher: PublisherProxy<Event>,
+    init(subscribingTo publisher: Subscribe<Event>,
          _ handler: @escaping EventHandler<Event>) {
         self.publisher = publisher
         self.handler = handler
