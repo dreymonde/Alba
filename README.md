@@ -13,12 +13,12 @@ publisher.publish(UUID())
 
 #### Subscribing
 
-Notice that for subscribing you should use `PublisherProxy` instead of `Publisher`!
+In order to subscribe, you should use `Subscribe` instances. The easiest way to get them is by using `.proxy` property on publishers:
 
 ```swift
 final class NumbersPrinter {
     
-    init(numbersPublisher: PublisherProxy<Int>) {
+    init(numbersPublisher: Subscribe<Int>) {
         numbersPublisher.subscribe(self, with: NumbersPrinter.print)
     }
     
@@ -43,7 +43,7 @@ let stringPublisher = Publisher<String>()
 
 final class Listener {
     
-    init(publisher: PublisherProxy<String>) {
+    init(publisher: Subscribe<String>) {
         publisher
             .flatMap({ Int($0) })
             .filter({ $0 > 0 })
@@ -88,6 +88,28 @@ final class State {
 
 let state = State()
 state.number.proxy.subscribe( ... )
+```
+
+### Writing your own `Subscribe` extensions
+
+If you want to write your own `Subscribe` extensions, you should use `rawModify` method:
+
+```swift
+public func rawModify<OtherEvent>(subscribe: (ObjectIdentifier, EventHandler<OtherEvent>) -> (), entry: @autoclosure @escaping ProxyPayload.Entry) -> Subscribe<OtherEvent>
+```
+
+Here is, for example, how you can implement `map`:
+
+```swift
+public func map<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent) -> Subscribe<OtherEvent> {
+    return rawModify(subscribe: { (identifier, handle) in
+        let handler: EventHandler<Event> = { event in
+            handle(transform(event))
+        }
+        self._subscribe(identifier, handler)
+    }, entry: .mapped(fromType: String.init(describing: Event.self),
+                      toType: String.init(describing: OtherEvent.self)))
+}
 ```
 
 ## Installation

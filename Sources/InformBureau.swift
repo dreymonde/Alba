@@ -1,10 +1,26 @@
-//
-//  InformBureau.swift
-//  Alba
-//
-//  Created by Oleg Dreyman on 11.02.17.
-//  Copyright © 2017 John Sundell. All rights reserved.
-//
+/**
+ *  Alba
+ *
+ *  Copyright (c) 2016 Oleg Dreyman. Licensed under the MIT license, as follows:
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *  SOFTWARE.
+ */
 
 public protocol InformBureauPayload {
     
@@ -43,7 +59,7 @@ fileprivate final class InformBureauPublisher<Event> : Subscribable {
     }
     
     fileprivate var proxy: Subscribe<Event> {
-        let payload = ProxyPayload.empty.adding(entry: .publisherLabel("Alba.InformBureau (\(Event.self))"))
+        let payload = ProxyPayload.empty.adding(entry: .publisherLabel("Alba.InformBureau", type: InformBureauPublisher<Event>.self))
         return Subscribe(subscribe: { self.handlers.append($0.1) },
                               unsubscribe: { _ in },
                               payload: payload)
@@ -97,18 +113,18 @@ public final class InformBureau {
                 print("Enable Alba.InformBureau first")
                 return
             }
-            InformBureau.didSubscribe.subscribe(shared, with: Logger.logSub_def)
+            InformBureau.didSubscribe.subscribe(shared, with: Logger.logSubMergeLevelZero)
             InformBureau.didPublish.subscribe(shared, with: Logger.logPub)
             InformBureau.generalWarnings.subscribe(shared, with: Logger.logGeneralWarning)
         }
         
         public static func disable() {
-            InformBureau.didSubscribe.unsafe.unsubscribe(self)
-            InformBureau.didPublish.unsafe.unsubscribe(self)
-            InformBureau.generalWarnings.unsafe.unsubscribe(self)
+            InformBureau.didSubscribe.unsafe.unsubscribe(shared)
+            InformBureau.didPublish.unsafe.unsubscribe(shared)
+            InformBureau.generalWarnings.unsafe.unsubscribe(shared)
         }
         
-        func logSub_def(_ logMessage: SubscriptionLogMessage) {
+        func logSubMergeLevelZero(_ logMessage: SubscriptionLogMessage) {
             logSub(logMessage)
             print("")
         }
@@ -116,28 +132,38 @@ public final class InformBureau {
         func logSub(_ logMessage: SubscriptionLogMessage, mergeLevel: Int = 0) {
             let mergeInset: String = (0 ..< mergeLevel).reduce("", { $0.0 + "   " })
             let mark = "(S) " + mergeInset
+            func mprint(_ item: String) {
+                print(mark + item)
+            }
             if mergeLevel == 0 {
                 print("")
             }
             for entry in logMessage.entries {
                 switch entry {
-                case .publisherLabel(let label):
-                    print(mark + label)
-                case .mapped(fromType: let from, toType: let to):
-                    print(mark + "--> mapped from \(from) to \(to)")
-                case .filtered:
-                    print(mark + "--> filtered")
-                case .interrupted:
-                    print(mark + "--> interrupted")
-                case .redirected(to: let label):
-                    print(mark + "!-> redirected to \(label)")
-                case .subscribed(identifier: let identifier, ofType: let type):
-                    print(mark + "!-> subscribed by \(type):\(identifier.hashValue)")
-                case .listened(let type):
-                    print(mark + "!-> listened with EventHandler<\(type)>")
-                case .merged(otherPayload: let other):
-                    print(mark + "merged with:")
-                    logSub(other, mergeLevel: mergeLevel + 1)
+                case .publisherLabel(let label, let type):
+                    mprint("\(label) (\(type))")
+                case .transformation(let label, let transformation):
+                    
+                    switch transformation {
+                    case .sameType:
+                        mprint("--> \(label)")
+                    case .transformed(let fromType, let toType):
+                        mprint("--> \(label) from \(fromType) to \(toType)")
+                    }
+                case .custom(let custom):
+                    mprint("--> \(custom)")
+                case .merged(let label, let otherPayload):
+                    mprint("\(label) with:")
+                    logSub(otherPayload, mergeLevel: mergeLevel + 1)
+                case .subscription(let subscription):
+                    switch subscription {
+                    case .byObject(let identifier, let type):
+                        mprint("!-> subscribed by \(type):\(identifier.hashValue)")
+                    case .redirection(let label, let type):
+                        mprint("!-> redirected to \(label) (\(type))")
+                    case .listen(let type):
+                        mprint("!-> listened with EventHandler<\(type)>")
+                    }
                 }
             }
         }
@@ -147,8 +173,8 @@ public final class InformBureau {
             print("")
             for entry in logMessage.entries {
                 switch entry {
-                case .published(publisherLabel: let publisherLabel, event: let event):
-                    print(mark + "\(publisherLabel) published \(event)")
+                case .published(publisherLabel: let publisherLabel, publisherType: let publisherType, event: let event):
+                    print(mark + "\(publisherLabel) (\(publisherType)) published \(event)")
                 case .handled(handlerLabel: let handlerLabel):
                     print(mark + "--> handled by \(handlerLabel)")
                 }

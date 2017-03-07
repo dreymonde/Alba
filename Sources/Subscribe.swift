@@ -25,14 +25,43 @@
 public struct ProxyPayload : InformBureauPayload {
     
     public enum Entry {
-        case publisherLabel(String)
-        case mapped(fromType: String, toType: String)
-        case filtered
-        case interrupted
-        case redirected(to: String)
-        case subscribed(identifier: ObjectIdentifier, ofType: String)
-        case listened(eventType: String)
-        case merged(otherPayload: ProxyPayload)
+        
+        public enum Subscription {
+            case byObject(identifier: ObjectIdentifier, ofType: Any.Type)
+            case redirection(to: String, ofType: Any.Type)
+            case listen(eventType: Any.Type)
+        }
+        
+        public enum Transformation {
+            case sameType
+            case transformed(fromType: Any.Type, toType: Any.Type)
+        }
+        
+        public typealias TransformationLabel = String
+        
+        public enum MergeLabel {
+            case merged
+            case custom(String)
+        }
+        
+        case publisherLabel(String, type: Any.Type)
+        case subscription(Subscription)
+        case transformation(label: TransformationLabel, Transformation)
+        case merged(label: MergeLabel, otherPayload: ProxyPayload)
+        case custom(String)
+        
+        static var filtered: Entry {
+            return .transformation(label: "filtered", .sameType)
+        }
+        
+        static func mapped(fromType: Any.Type, toType: Any.Type) -> Entry {
+            return .transformation(label: "mapped", .transformed(fromType: fromType, toType: toType))
+        }
+        
+        static var interrupted: Entry {
+            return .custom("interrupted")
+        }
+        
     }
     
     public var entries: [Entry]
@@ -54,10 +83,10 @@ public struct Subscribe<Event> {
                 label: String = "unnnamed") {
         self._subscribe = subscribe
         self._unsubscribe = unsubscribe
-        self.payload = ProxyPayload.empty.adding(entry: .publisherLabel(label))
+        self.payload = ProxyPayload.empty.adding(entry: .publisherLabel(label, type: Subscribe<Event>.self))
     }
     
-    internal init(subscribe: @escaping (ObjectIdentifier, @escaping EventHandler<Event>) -> (),
+    public init(subscribe: @escaping (ObjectIdentifier, @escaping EventHandler<Event>) -> (),
                   unsubscribe: @escaping (ObjectIdentifier) -> (),
                   payload: ProxyPayload) {
         self._subscribe = subscribe
@@ -75,7 +104,8 @@ public struct Subscribe<Event> {
                           with producer: @escaping (Object) -> EventHandler<Event>) {
         let identifier = ObjectIdentifier(object)
         if InformBureau.isEnabled {
-            InformBureau.submitSubscription(payload.adding(entry: .subscribed(identifier: identifier, ofType: String(describing: Object.self))))
+            let entry = ProxyPayload.Entry.subscription(.byObject(identifier: identifier, ofType: Object.self))
+            InformBureau.submitSubscription(payload.adding(entry: entry))
         }
         self._subscribe(identifier, { [weak object] in
             if let object = object {
@@ -108,8 +138,8 @@ public struct Subscribe<Event> {
                 handle(transform(event))
             }
             self._subscribe(identifier, handler)
-        }, entry: .mapped(fromType: String.init(describing: Event.self),
-                          toType: String.init(describing: OtherEvent.self)))
+        }, entry: .mapped(fromType: Event.self,
+                          toType: OtherEvent.self))
     }
     
     public func flatMap<OtherEvent>(_ transform: @escaping (Event) -> OtherEvent?) -> Subscribe<OtherEvent> {
@@ -118,8 +148,8 @@ public struct Subscribe<Event> {
                 if let transformed = transform(event) { handle(transformed) }
             }
             self._subscribe(identifier, handler)
-        }, entry: .mapped(fromType: String.init(describing: Event.self),
-                          toType: String.init(describing: OtherEvent.self)))
+        }, entry: .mapped(fromType: Event.self,
+                          toType: OtherEvent.self))
     }
     
     public func interrupted(with work: @escaping (Event) -> ()) -> Subscribe<Event> {
@@ -135,12 +165,12 @@ public struct Subscribe<Event> {
         }, unsubscribe: { (identifier) in
             self._unsubscribe(identifier)
             other._unsubscribe(identifier)
-        }, payload: payload.adding(entry: .merged(otherPayload: other.payload)))
+        }, payload: payload.adding(entry: .merged(label: .merged, otherPayload: other.payload)))
     }
     
     public func redirect<Publisher : PublisherProtocol>(to publisher: Publisher) where Publisher.Event == Event {
         if InformBureau.isEnabled {
-            InformBureau.submitSubscription(payload.adding(entry: .redirected(to: "\(String.init(describing: Publisher.self)):\(publisher.label)")))
+            InformBureau.submitSubscription(payload.adding(entry: .subscription(.redirection(to: publisher.label, ofType: Publisher.self))))
         }
         subscribe(publisher, with: Publisher.publish)
     }
@@ -148,7 +178,7 @@ public struct Subscribe<Event> {
     public func listen(with handler: @escaping EventHandler<Event>) {
         let listener = NotGoingBasicListener<Event>(subscribingTo: self, handler)
         if InformBureau.isEnabled {
-            InformBureau.submitSubscription(payload.adding(entry: .listened(eventType: String.init(describing: Event.self))))
+            InformBureau.submitSubscription(payload.adding(entry: .subscription(.listen(eventType:Event.self))))
         }
     }
     
@@ -244,7 +274,7 @@ public extension Subscribe where Event : SignedProtocol {
 public extension Subscribe {
     
     static func empty() -> Subscribe<Event> {
-        let payload = ProxyPayload.empty.adding(entry: .publisherLabel("WARNING: Empty proxy"))
+        let payload = ProxyPayload.empty.adding(entry: .publisherLabel("WARNING: Empty proxy", type: Subscribe<Event>.self))
         return Subscribe<Event>(subscribe: { _ in },
                                      unsubscribe: { _ in },
                                      payload: payload)

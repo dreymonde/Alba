@@ -35,6 +35,7 @@ class AlbaTests: XCTestCase {
             print("Alba Inform Bureau on")
             Alba.InformBureau.isEnabled = true
             Alba.InformBureau.Logger.enable()
+            Alba.OSLogger.enable()
 //            Alba.InformBureau.didPublish.listen(with: { print($0) })
             isBureauWorking = true
             print("Now working")
@@ -299,8 +300,7 @@ class AlbaTests: XCTestCase {
         Alba.InformBureau.didSubscribe
             .flatMap({ $0.entries.first })
             .listen { (logEntry) in
-                print(logEntry)
-                if case .publisherLabel(let name) = logEntry, name == "WARNING: Empty proxy" {
+                if case .publisherLabel(let name, _) = logEntry, name == "WARNING: Empty proxy" {
                     expectation.fulfill()
                 }
         }
