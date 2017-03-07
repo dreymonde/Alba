@@ -132,11 +132,7 @@ public struct PublisherProxy<Event> {
         }, unsubscribe: { (identifier) in
             self._unsubscribe(identifier)
             other._unsubscribe(identifier)
-        }, payload: payload.adding(entry: .merged(otherPayload: other.payload)),
-           submitName: { (identifier, label) in
-            self._submitName(identifier, label)
-            other._submitName(identifier, label)
-        })
+        }, payload: payload.adding(entry: .merged(otherPayload: other.payload)))
     }
     
     public func redirect<Publisher : PublisherProtocol>(to publisher: Publisher) where Publisher.Event == Event {

@@ -108,12 +108,9 @@ public final class InformBureau {
             InformBureau.generalWarnings.unsafe.unsubscribe(self)
         }
         
-        func logSub(_ logMessage: SubscriptionLogMessage) {
-            let mark = "(S) "
-            print("")
-
         func logSub_def(_ logMessage: SubscriptionLogMessage) {
             logSub(logMessage)
+            print("")
         }
         
         func logSub(_ logMessage: SubscriptionLogMessage, mergeLevel: Int = 0) {
