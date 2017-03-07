@@ -37,10 +37,12 @@ public final class OSLogger {
     
     public static func enable() {
         InformBureau.didSubscribe.subscribe(shared, with: OSLogger.logSub)
+        InformBureau.didPublish.subscribe(shared, with: OSLogger.logPub)
     }
     
     public static func disable() {
         InformBureau.didSubscribe.unsafe.unsubscribe(shared)
+        InformBureau.didPublish.unsafe.unsubscribe(shared)
     }
     
     let subLog = OSLog(subsystem: "com.alba.alba", category: "subscriptions")
@@ -61,9 +63,41 @@ public final class OSLogger {
         if let publisherLabel = publisherLabel, let subscription = subscription {
             switch subscription {
             case .byObject(identifier: let identifier, ofType: let type):
-                os_log("%@ (%@) subscribed by %@:%@", log: subLog, type: .debug, publisherLabel.0 as NSString, String(describing: publisherLabel.1) as NSString, String(describing: type) as NSString, identifier.hashValue as NSNumber)
+                os_log("%@ (%@) subscribed by %@:%@",
+                       log: subLog,
+                       type: .debug,
+                       publisherLabel.0 as NSString,
+                       String(describing: publisherLabel.1) as NSString,
+                       String(describing: type) as NSString,
+                       identifier.hashValue as NSNumber)
+            case .redirection(to: let label, ofType: let type):
+                os_log("%@ (%@) redirected to %@ (%@)",
+                       log: subLog,
+                       type: .debug,
+                       publisherLabel.0 as NSString,
+                       String(describing: publisherLabel.1) as NSString,
+                       label as NSString,
+                       String(describing: type) as NSString)
             default:
                 print("Unsupported yet")
+            }
+        }
+    }
+    
+    let pubLog = OSLog(subsystem: "com.alba.alba", category: "publications")
+    
+    func logPub(_ logMessage: InformBureau.PublishingLogMessage) {
+        for entry in logMessage.entries {
+            switch entry {
+            case .published(publisherLabel: let label, publisherType: let type, event: let event):
+                os_log("%@ (%@) published %@",
+                       log: pubLog,
+                       type: .debug,
+                       label as NSString,
+                       String(describing: type) as NSString,
+                       (event as? NSObject) ?? String(describing: event) as NSString)
+            default:
+                break
             }
         }
     }
