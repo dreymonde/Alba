@@ -29,10 +29,6 @@
 		7C08125C1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
 		7C08125D1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
 		7C08125E1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
-		7C1873CC1E6EF070007241B7 /* OSLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873CB1E6EF070007241B7 /* OSLogger.swift */; };
-		7C1873CD1E6EF070007241B7 /* OSLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873CB1E6EF070007241B7 /* OSLogger.swift */; };
-		7C1873CE1E6EF070007241B7 /* OSLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873CB1E6EF070007241B7 /* OSLogger.swift */; };
-		7C1873CF1E6EF070007241B7 /* OSLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873CB1E6EF070007241B7 /* OSLogger.swift */; };
 		7C1873D11E6F3669007241B7 /* WeakSubscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */; };
 		7C1873D21E6F3669007241B7 /* WeakSubscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */; };
 		7C1873D31E6F3669007241B7 /* WeakSubscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */; };
@@ -83,7 +79,6 @@
 		7C0812481DE4680100A49B21 /* Observable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Observable.swift; path = Sources/Observable.swift; sourceTree = "<group>"; };
 		7C0812491DE4680100A49B21 /* Subscribe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Subscribe.swift; path = Sources/Subscribe.swift; sourceTree = "<group>"; };
 		7C08124A1DE4680100A49B21 /* Publisher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Publisher.swift; path = Sources/Publisher.swift; sourceTree = "<group>"; };
-		7C1873CB1E6EF070007241B7 /* OSLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OSLogger.swift; path = Sources/OSLogger.swift; sourceTree = "<group>"; };
 		7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WeakSubscribe.swift; path = Sources/WeakSubscribe.swift; sourceTree = "<group>"; };
 		7CBC662A1E5874E20033FF36 /* InformBureau.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InformBureau.swift; path = Sources/InformBureau.swift; sourceTree = "<group>"; };
 		AD2FAA261CD0B6D800659CF4 /* Alba.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Alba.plist; sourceTree = "<group>"; };
@@ -191,7 +186,6 @@
 				7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */,
 				7C08124A1DE4680100A49B21 /* Publisher.swift */,
 				7CBC662A1E5874E20033FF36 /* InformBureau.swift */,
-				7C1873CB1E6EF070007241B7 /* OSLogger.swift */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -499,7 +493,6 @@
 				7C08124B1DE4680100A49B21 /* Alba.swift in Sources */,
 				7C0812531DE4680100A49B21 /* Observable.swift in Sources */,
 				7C08124F1DE4680100A49B21 /* Listener.swift in Sources */,
-				7C1873CC1E6EF070007241B7 /* OSLogger.swift in Sources */,
 				7C08125B1DE4680100A49B21 /* Publisher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -522,7 +515,6 @@
 				7C08124D1DE4680100A49B21 /* Alba.swift in Sources */,
 				7C0812551DE4680100A49B21 /* Observable.swift in Sources */,
 				7C0812511DE4680100A49B21 /* Listener.swift in Sources */,
-				7C1873CE1E6EF070007241B7 /* OSLogger.swift in Sources */,
 				7C08125D1DE4680100A49B21 /* Publisher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -537,7 +529,6 @@
 				7C08124E1DE4680100A49B21 /* Alba.swift in Sources */,
 				7C0812561DE4680100A49B21 /* Observable.swift in Sources */,
 				7C0812521DE4680100A49B21 /* Listener.swift in Sources */,
-				7C1873CF1E6EF070007241B7 /* OSLogger.swift in Sources */,
 				7C08125E1DE4680100A49B21 /* Publisher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -552,7 +543,6 @@
 				7C08124C1DE4680100A49B21 /* Alba.swift in Sources */,
 				7C0812541DE4680100A49B21 /* Observable.swift in Sources */,
 				7C0812501DE4680100A49B21 /* Listener.swift in Sources */,
-				7C1873CD1E6EF070007241B7 /* OSLogger.swift in Sources */,
 				7C08125C1DE4680100A49B21 /* Publisher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

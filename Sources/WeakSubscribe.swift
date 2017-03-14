@@ -109,3 +109,9 @@ public struct WeakSubscribe<Object : AnyObject, Event> {
     }
     
 }
+
+public prefix func ! <T>(boolFunc: @escaping (T) -> Bool) -> ((T) -> Bool) {
+    return {
+        return !boolFunc($0)
+    }
+}

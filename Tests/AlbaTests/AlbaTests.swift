@@ -35,7 +35,6 @@ class AlbaTests: XCTestCase {
             print("Alba Inform Bureau on")
             Alba.InformBureau.isEnabled = true
             Alba.InformBureau.Logger.enable()
-            Alba.OSLogger.enable()
 //            Alba.InformBureau.didPublish.listen(with: { print($0) })
             isBureauWorking = true
             print("Now working")
@@ -336,8 +335,8 @@ class AlbaTests: XCTestCase {
         func subscribe(to publisher: Subscribe<String>) {
             publisher
                 .weak(self)
-                .map(Filter.fromString)
-                .filter(Filter.contains)
+                .map({ $0.fromString })
+                .filter({ !$0.numbers.contains })
                 .subscribe(with: Filter.printNonExisting)
         }
         
@@ -345,11 +344,10 @@ class AlbaTests: XCTestCase {
             if number == 15 {
                 XCTFail("Filter should be deallocated at this point")
             }
+            if numbers.contains(number) {
+                XCTFail("Where is actual filtering?")
+            }
             print(number)
-        }
-        
-        func contains(_ int: Int) -> Bool {
-            return !numbers.contains(int)
         }
         
         func fromString(_ string: String) -> Int {
