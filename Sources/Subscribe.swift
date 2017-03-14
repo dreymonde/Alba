@@ -108,7 +108,7 @@ public struct Subscribe<Event> {
     public func subscribe<Object : AnyObject>(_ object: Object,
                           with producer: @escaping (Object) -> EventHandler<Event>) {
         let identifier = ObjectIdentifier(object)
-        if InformBureau.isEnabled {
+        if InformBureau.isEnabled, Object.self != Publisher<Event>.self {
             let entry = ProxyPayload.Entry.subscription(.byObject(identifier: identifier, ofType: Object.self))
             InformBureau.submitSubscription(payload.adding(entry: entry))
         }
