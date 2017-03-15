@@ -53,20 +53,6 @@ public struct ProxyPayload : InformBureauPayload {
         case merged(label: MergeLabel, otherPayload: ProxyPayload)
         case custom(String)
         
-        static var filtered: Entry {
-            return .transformation(label: "filtered", .sameType)
-        }
-        
-        static func mapped(fromType: Any.Type, toType: Any.Type) -> Entry {
-            return .transformation(label: "mapped", .transformed(fromType: fromType, toType: toType))
-        }
-        
-        static var interrupted: Entry {
-            return .custom("interrupted")
-        }
-        
-        static let emptyProxyLabel = "WARNING: Empty proxy"
-        
     }
     
     public var entries: [Entry]
@@ -74,6 +60,24 @@ public struct ProxyPayload : InformBureauPayload {
     public init(entries: [Entry]) {
         self.entries = entries
     }
+    
+}
+
+public extension ProxyPayload.Entry {
+    
+    static var filtered: ProxyPayload.Entry {
+        return .transformation(label: "filtered", .sameType)
+    }
+    
+    static func mapped(fromType: Any.Type, toType: Any.Type) -> ProxyPayload.Entry {
+        return .transformation(label: "mapped", .transformed(fromType: fromType, toType: toType))
+    }
+    
+    static var interrupted: ProxyPayload.Entry {
+        return .custom("interrupted")
+    }
+    
+    static let emptyProxyLabel = "WARNING: Empty proxy"
     
 }
 
