@@ -87,21 +87,22 @@ public struct WeakSubscribe<Object : AnyObject, Event> {
             }
             selfproxy.unsafe.subscribe(objectWith: identifier, with: handler)
         }, entry: .mapped(fromType: Event.self, toType: OtherEvent.self))
-//        let fproxy: Subscribe<OtherEvent> = selfproxy.rawModify(subscribe: { [weak object] (identifier, handle) in
-//            if let objecta = object {
-//                let handler: EventHandler<Event> = { [weak objecta] event in
-//                    if let objectaa = objecta {
-//                        handle(transform(objectaa)(event))
-//                    } else {
-//                        selfproxy.unsafe.unsubscribe(objectWith: identifier)
-//                    }
-//                }
-//                selfproxy.unsafe.subscribe(objectWith: identifier, with: handler)
-//            } else {
-//                selfproxy.unsafe.unsubscribe(objectWith: identifier)
-//            }
-//        }, entry: .mapped(fromType: Event.self, toType: OtherEvent.self))
-//        return WeakSubscribe<Object, OtherEvent>(proxy: fproxy, object: object)
+    }
+    
+    public func flatMap<OtherEvent>(_ transform: @escaping (Object) -> (Event) -> (OtherEvent?)) -> WeakSubscribe<Object, OtherEvent> {
+        let selfproxy = proxy
+        return rawModify(subscribe: { (object, identifier, handle) in
+            let handler: EventHandler<Event> = { [weak object] event in
+                if let objecta = object {
+                    if let transformed = transform(objecta)(event) {
+                        handle(transformed)
+                    }
+                } else {
+                    selfproxy.unsafe.unsubscribe(objectWith: identifier)
+                }
+            }
+            selfproxy.unsafe.subscribe(objectWith: identifier, with: handler)
+        }, entry: .mapped(fromType: Event.self, toType: OtherEvent.self))
     }
     
     public func subscribe(with producer: @escaping (Object) -> EventHandler<Event>) {
