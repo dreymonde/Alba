@@ -29,6 +29,10 @@
 		7C08125C1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
 		7C08125D1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
 		7C08125E1DE4680100A49B21 /* Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C08124A1DE4680100A49B21 /* Publisher.swift */; };
+		7C1873D11E6F3669007241B7 /* WeakSubscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */; };
+		7C1873D21E6F3669007241B7 /* WeakSubscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */; };
+		7C1873D31E6F3669007241B7 /* WeakSubscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */; };
+		7C1873D41E6F3669007241B7 /* WeakSubscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */; };
 		7CBC662B1E5874E20033FF36 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC662A1E5874E20033FF36 /* InformBureau.swift */; };
 		7CBC662C1E5874ED0033FF36 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC662A1E5874E20033FF36 /* InformBureau.swift */; };
 		7CBC662D1E5874ED0033FF36 /* InformBureau.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBC662A1E5874E20033FF36 /* InformBureau.swift */; };
@@ -75,6 +79,7 @@
 		7C0812481DE4680100A49B21 /* Observable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Observable.swift; path = Sources/Observable.swift; sourceTree = "<group>"; };
 		7C0812491DE4680100A49B21 /* Subscribe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Subscribe.swift; path = Sources/Subscribe.swift; sourceTree = "<group>"; };
 		7C08124A1DE4680100A49B21 /* Publisher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Publisher.swift; path = Sources/Publisher.swift; sourceTree = "<group>"; };
+		7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WeakSubscribe.swift; path = Sources/WeakSubscribe.swift; sourceTree = "<group>"; };
 		7CBC662A1E5874E20033FF36 /* InformBureau.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InformBureau.swift; path = Sources/InformBureau.swift; sourceTree = "<group>"; };
 		AD2FAA261CD0B6D800659CF4 /* Alba.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Alba.plist; sourceTree = "<group>"; };
 		AD2FAA281CD0B6E100659CF4 /* AlbaTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AlbaTests.plist; sourceTree = "<group>"; };
@@ -178,6 +183,7 @@
 				7C0812471DE4680100A49B21 /* Listener.swift */,
 				7C0812481DE4680100A49B21 /* Observable.swift */,
 				7C0812491DE4680100A49B21 /* Subscribe.swift */,
+				7C1873D01E6F3669007241B7 /* WeakSubscribe.swift */,
 				7C08124A1DE4680100A49B21 /* Publisher.swift */,
 				7CBC662A1E5874E20033FF36 /* InformBureau.swift */,
 			);
@@ -481,6 +487,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C1873D11E6F3669007241B7 /* WeakSubscribe.swift in Sources */,
 				7CBC662B1E5874E20033FF36 /* InformBureau.swift in Sources */,
 				7C0812571DE4680100A49B21 /* Subscribe.swift in Sources */,
 				7C08124B1DE4680100A49B21 /* Alba.swift in Sources */,
@@ -502,6 +509,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C1873D31E6F3669007241B7 /* WeakSubscribe.swift in Sources */,
 				7CBC662D1E5874ED0033FF36 /* InformBureau.swift in Sources */,
 				7C0812591DE4680100A49B21 /* Subscribe.swift in Sources */,
 				7C08124D1DE4680100A49B21 /* Alba.swift in Sources */,
@@ -515,6 +523,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C1873D41E6F3669007241B7 /* WeakSubscribe.swift in Sources */,
 				7CBC662E1E5874ED0033FF36 /* InformBureau.swift in Sources */,
 				7C08125A1DE4680100A49B21 /* Subscribe.swift in Sources */,
 				7C08124E1DE4680100A49B21 /* Alba.swift in Sources */,
@@ -528,6 +537,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C1873D21E6F3669007241B7 /* WeakSubscribe.swift in Sources */,
 				7CBC662C1E5874ED0033FF36 /* InformBureau.swift in Sources */,
 				7C0812581DE4680100A49B21 /* Subscribe.swift in Sources */,
 				7C08124C1DE4680100A49B21 /* Alba.swift in Sources */,

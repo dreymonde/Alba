@@ -291,4 +291,12 @@ public extension Subscribe {
     
 }
 
+public extension Subscribe {
+    
+    func weak<Object : AnyObject>(_ object: Object) -> WeakSubscribe<Object, Event> {
+        return WeakSubscribe(proxy: self, object: object)
+    }
+    
+}
+
 public typealias SignedSubscribe<Event> = Subscribe<Signed<Event>>
