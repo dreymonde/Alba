@@ -32,23 +32,7 @@ public struct WeakSubscribe<Object : AnyObject, Event> {
         self.proxy = proxy
         self.object = object
     }
-    
-//    public func filter(_ condition: @escaping (Object) -> (Event) -> Bool) -> WeakSubscribe<Object, Event> {
-//        weak var obj = object
-//        return WeakSubscribe(subscribe: { (identifier, handle) in
-//            let handler: EventHandler<Event> = { event in
-//                if let object = obj {
-//                    if condition(object)(event) { handle(event) }
-//                } else {
-//                    self._unsubscribe(identifier)
-//                }
-//            }
-//            self._subscribe(identifier, handler)
-//        }, unsubscribe: self._unsubscribe,
-//           object: object,
-//           payload: payload.adding(entry: .filtered))
-//    }
-    
+        
     public func rawModify<OtherEvent>(subscribe: @escaping (Object, ObjectIdentifier, @escaping EventHandler<OtherEvent>) -> (), entry: ProxyPayload.Entry) -> WeakSubscribe<Object, OtherEvent> {
         let selfproxy = self.proxy
         let newProxy: Subscribe<OtherEvent> = selfproxy.rawModify(subscribe: { [weak object] (identifier, handle) in
