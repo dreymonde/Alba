@@ -62,3 +62,14 @@ public extension ObjectIdentifier {
     }
     
 }
+
+public extension Optional where Wrapped == ObjectIdentifier {
+    
+    func belongsTo(_ object: AnyObject) -> Bool {
+        if let wrapped = self {
+            return ObjectIdentifier(object) == wrapped
+        }
+        return false
+    }
+    
+}

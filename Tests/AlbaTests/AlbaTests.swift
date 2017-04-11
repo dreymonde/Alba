@@ -75,6 +75,14 @@ class AlbaTests: XCTestCase {
             }
         }
         
+        func handle_filtered(_ number: Int) {
+            if number == 10 {
+                XCTFail()
+            } else if number == 5 {
+                expectation.fulfill()
+            }
+        }
+        
     }
     
     func testSigned() {
@@ -84,6 +92,16 @@ class AlbaTests: XCTestCase {
         pub.proxy.subscribe(sub, with: SignedThing.handle)
         pub.publish(5, submittedBy: sub)
         pub.publish(7, submittedBy: nil)
+        waitForExpectations(timeout: 5.0)
+    }
+    
+    func testFilterSigned() {
+        let pub = SignedPublisher<Int>()
+        let expectation = self.expectation(description: "on sub")
+        let sub = SignedThing(expectation: expectation)
+        pub.proxy.drop(eventsSignedBy: sub).unsigned.subscribe(sub, with: SignedThing.handle_filtered)
+        pub.publish(10, submittedBy: sub)
+        pub.publish(5, submittedBy: nil)
         waitForExpectations(timeout: 5.0)
     }
     

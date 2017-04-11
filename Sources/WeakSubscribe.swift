@@ -24,7 +24,7 @@
 
 public struct WeakSubscribe<Object : AnyObject, Event> {
     
-    fileprivate let proxy: Subscribe<Event>
+    public let proxy: Subscribe<Event>
     fileprivate let object: Object
     
     public init(proxy: Subscribe<Event>,

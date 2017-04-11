@@ -258,6 +258,14 @@ public extension Subscribe where Event : SignedProtocol {
         return filter({ condition($0.value) })
     }
     
+    func drop<Object : AnyObject>(eventsSignedBy signer: Object) -> Subscribe<Event> {
+        return weak(signer).filter({ (object) in
+            return { (event) in
+                !event.submittedBy.belongsTo(object)
+            }
+        }).proxy
+    }
+    
     func mapValue<OtherEvent>(_ transform: @escaping (Event.Wrapped) -> OtherEvent) -> Subscribe<Signed<OtherEvent>> {
         return map({ (event) in
             let transformed = transform(event.value)
