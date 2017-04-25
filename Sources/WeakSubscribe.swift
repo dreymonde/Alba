@@ -92,7 +92,49 @@ public struct WeakSubscribe<Object : AnyObject, Event> {
     public func subscribe(with producer: @escaping (Object) -> EventHandler<Event>) {
         proxy.subscribe(object, with: producer)
     }
+        
+    public var flat: FlatWeakSubscribe<Object, Event> {
+        return FlatWeakSubscribe(weakProxy: self)
+    }
     
+}
+
+public struct FlatWeakSubscribe<Object : AnyObject, Event> {
+    
+    public let weakProxy: WeakSubscribe<Object, Event>
+    
+    public init(weakProxy: WeakSubscribe<Object, Event>) {
+        self.weakProxy = weakProxy
+    }
+    
+    public var proxy: Subscribe<Event> {
+        return weakProxy.proxy
+    }
+    
+    public func filter(_ condition: @escaping (Object, Event) -> Bool) -> FlatWeakSubscribe<Object, Event> {
+        return weakProxy.filter(unfold(condition)).flat
+    }
+    
+    public func map<OtherEvent>(_ transform: @escaping (Object, Event) -> OtherEvent) -> FlatWeakSubscribe<Object, OtherEvent> {
+        return weakProxy.map(unfold(transform)).flat
+    }
+    
+    public func flatMap<OtherEvent>(_ transform: @escaping (Object, Event) -> OtherEvent?) -> FlatWeakSubscribe<Object, OtherEvent> {
+        return weakProxy.flatMap(unfold(transform)).flat
+    }
+    
+    public func subscribe(with handler: @escaping (Object, Event) -> ()) {
+        weakProxy.subscribe(with: unfold(handler))
+    }
+    
+}
+
+internal func unfold<First, Second, Output>(_ function: @escaping (First, Second) -> Output) -> (First) -> (Second) -> Output {
+    return { first in
+        return { second in
+            return function(first, second)
+        }
+    }
 }
 
 public prefix func ! <T>(boolFunc: @escaping (T) -> Bool) -> ((T) -> Bool) {

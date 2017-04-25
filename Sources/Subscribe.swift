@@ -125,6 +125,10 @@ public struct Subscribe<Event> {
         })
     }
     
+    public func flatSubscribe<Object : AnyObject>(_ object: Object, with handler: @escaping (Object, Event) -> ()) {
+        subscribe(object, with: unfold(handler))
+    }
+    
     public func rawModify<OtherEvent>(subscribe: @escaping (ObjectIdentifier, @escaping EventHandler<OtherEvent>) -> (),
                              entry: ProxyPayload.Entry) -> Subscribe<OtherEvent> {
         return Subscribe<OtherEvent>(subscribe: subscribe,
