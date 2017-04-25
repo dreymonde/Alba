@@ -199,13 +199,13 @@ public struct Subscribe<Event> {
         return map({ _ in })
     }
     
-    public var unsafe: UnsafeSubscribe<Event> {
-        return UnsafeSubscribe(proxy: self)
+    public var manual: ManualSubscribe<Event> {
+        return ManualSubscribe(proxy: self)
     }
     
 }
 
-public struct UnsafeSubscribe<Event> {
+public struct ManualSubscribe<Event> {
     
     fileprivate let proxy: Subscribe<Event>
     

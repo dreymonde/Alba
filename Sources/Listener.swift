@@ -31,18 +31,18 @@ internal class BasicListener<Event> {
                 _ handler: @escaping EventHandler<Event>) {
         self.publisher = publisher
         self.handler = handler
-        publisher.unsafe.subscribe(self, with: handler)
+        publisher.manual.subscribe(self, with: handler)
     }
     
     internal init<Pub : PublisherProtocol>(subscribingTo publisher: Pub,
                 _ handler: @escaping EventHandler<Event>) where Pub.Event == Event {
         self.publisher = publisher.proxy
         self.handler = handler
-        self.publisher.unsafe.subscribe(self, with: handler)
+        self.publisher.manual.subscribe(self, with: handler)
     }
     
     deinit {
-        publisher.unsafe.unsubscribe(self)
+        publisher.manual.unsubscribe(self)
     }
     
 }
@@ -56,14 +56,14 @@ internal class NotGoingBasicListener<Event> {
          _ handler: @escaping EventHandler<Event>) {
         self.publisher = publisher
         self.handler = handler
-        publisher.unsafe.subscribe(self, with: self.handle)
+        publisher.manual.subscribe(self, with: self.handle)
     }
     
     init<Pub : PublisherProtocol>(subscribingTo publisher: Pub,
          _ handler: @escaping EventHandler<Event>) where Pub.Event == Event {
         self.publisher = publisher.proxy
         self.handler = handler
-        self.publisher.unsafe.subscribe(self, with: self.handle)
+        self.publisher.manual.subscribe(self, with: self.handle)
     }
     
     func handle(_ event: Event) {
@@ -71,7 +71,7 @@ internal class NotGoingBasicListener<Event> {
     }
     
     deinit {
-        publisher.unsafe.unsubscribe(self)
+        publisher.manual.unsubscribe(self)
     }
     
 }

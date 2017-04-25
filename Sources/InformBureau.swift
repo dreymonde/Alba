@@ -119,9 +119,9 @@ public final class InformBureau {
         }
         
         public static func disable() {
-            InformBureau.didSubscribe.unsafe.unsubscribe(shared)
-            InformBureau.didPublish.unsafe.unsubscribe(shared)
-            InformBureau.generalWarnings.unsafe.unsubscribe(shared)
+            InformBureau.didSubscribe.manual.unsubscribe(shared)
+            InformBureau.didPublish.manual.unsubscribe(shared)
+            InformBureau.generalWarnings.manual.unsubscribe(shared)
         }
         
         func logSubMergeLevelZero(_ logMessage: SubscriptionLogMessage) {

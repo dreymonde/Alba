@@ -39,7 +39,7 @@ public struct WeakSubscribe<Object : AnyObject, Event> {
             if let objecta = object {
                 subscribe(objecta, identifier, handle)
             } else {
-                selfproxy.unsafe.unsubscribe(objectWith: identifier)
+                selfproxy.manual.unsubscribe(objectWith: identifier)
             }
         }, entry: entry)
         return WeakSubscribe<Object, OtherEvent>(proxy: newProxy, object: object)
@@ -52,10 +52,10 @@ public struct WeakSubscribe<Object : AnyObject, Event> {
                 if let object = object {
                     if condition(object)(event) { handle(event) }
                 } else {
-                    sproxy.unsafe.unsubscribe(objectWith: identifier)
+                    sproxy.manual.unsubscribe(objectWith: identifier)
                 }
             }
-            sproxy.unsafe.subscribe(objectWith: identifier, with: handler)
+            sproxy.manual.subscribe(objectWith: identifier, with: handler)
         }, entry: .filtered)
     }
     
@@ -66,10 +66,10 @@ public struct WeakSubscribe<Object : AnyObject, Event> {
                 if let objecta = object {
                     handle(transform(objecta)(event))
                 } else {
-                    selfproxy.unsafe.unsubscribe(objectWith: identifier)
+                    selfproxy.manual.unsubscribe(objectWith: identifier)
                 }
             }
-            selfproxy.unsafe.subscribe(objectWith: identifier, with: handler)
+            selfproxy.manual.subscribe(objectWith: identifier, with: handler)
         }, entry: .mapped(fromType: Event.self, toType: OtherEvent.self))
     }
     
@@ -82,10 +82,10 @@ public struct WeakSubscribe<Object : AnyObject, Event> {
                         handle(transformed)
                     }
                 } else {
-                    selfproxy.unsafe.unsubscribe(objectWith: identifier)
+                    selfproxy.manual.unsubscribe(objectWith: identifier)
                 }
             }
-            selfproxy.unsafe.subscribe(objectWith: identifier, with: handler)
+            selfproxy.manual.subscribe(objectWith: identifier, with: handler)
         }, entry: .mapped(fromType: Event.self, toType: OtherEvent.self))
     }
     
