@@ -190,6 +190,7 @@ public struct Subscribe<Event> {
     
     public func listen(with handler: @escaping EventHandler<Event>) {
         let listener = NotGoingBasicListener<Event>(subscribingTo: self, handler)
+        _silenceWarning(of: listener)
         if InformBureau.isEnabled {
             InformBureau.submitSubscription(payload.adding(entry: .subscription(.listen(eventType:Event.self))))
         }
@@ -312,3 +313,7 @@ public extension Subscribe {
 }
 
 public typealias SignedSubscribe<Event> = Subscribe<Signed<Event>>
+
+fileprivate func _silenceWarning(of unused: Any) {
+    
+}

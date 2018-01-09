@@ -60,16 +60,16 @@ class AlbaTests: XCTestCase {
             self.expectation = expectation
         }
         
-        func handle(_ number: Int, submittedBySelf: Bool) {
-            if submittedBySelf {
-                if number == 7 {
+        func handle(_ a: (number: Int, submittedBySelf: Bool)) {
+            if a.submittedBySelf {
+                if a.number == 7 {
                     XCTFail()
                 }
             } else {
-                if number == 5 {
+                if a.number == 5 {
                     XCTFail()
                 }
-                if number == 7 {
+                if a.number == 7 {
                     expectation.fulfill()
                 }
             }
@@ -113,16 +113,16 @@ class AlbaTests: XCTestCase {
             self.expectation = expectation
         }
         
-        func handle(_ number: Int, submittedByObjectWith identifier: ObjectIdentifier?) {
-            if identifier?.belongsTo(self) == true {
-                if number == 7 {
+        func handle(a: (number: Int, identifier: ObjectIdentifier?)) {
+            if a.identifier?.belongsTo(self) == true {
+                if a.number == 7 {
                     XCTFail()
                 }
             } else {
-                if number == 5 {
+                if a.number == 5 {
                     XCTFail()
                 }
-                if number == 7 {
+                if a.number == 7 {
                     expectation.fulfill()
                 }
             }
@@ -163,9 +163,9 @@ class AlbaTests: XCTestCase {
             print(int)
             XCTAssertNotEqual(int, 10)
         }
-        func handleSigned(_ int: Int, submitter: ObjectIdentifier?) {
-            print(int)
-            XCTAssertNotEqual(int, 10)
+        func handleSigned(a: (int: Int, submitter: ObjectIdentifier?)) {
+            print(a.int)
+            XCTAssertNotEqual(a.int, 10)
         }
     }
     

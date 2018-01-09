@@ -22,7 +22,7 @@
  *  SOFTWARE.
  */
 
-public protocol Subscribable : class {
+public protocol Subscribable : AnyObject {
     
     associatedtype Event
     
@@ -30,9 +30,7 @@ public protocol Subscribable : class {
     
 }
 
-public protocol PublisherProtocol : class, Subscribable {
-        
-    associatedtype Event
+public protocol PublisherProtocol : Subscribable {
     
     var label: String { get }
     
