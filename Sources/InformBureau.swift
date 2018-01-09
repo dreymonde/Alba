@@ -60,7 +60,7 @@ fileprivate final class InformBureauPublisher<Event> : Subscribable {
     
     fileprivate var proxy: Subscribe<Event> {
         let payload = ProxyPayload.empty.adding(entry: .publisherLabel("Alba.InformBureau", type: InformBureauPublisher<Event>.self))
-        return Subscribe(subscribe: { self.handlers.append($0.1) },
+        return Subscribe(subscribe: { (_, handler) in self.handlers.append(handler) },
                               unsubscribe: { _ in },
                               payload: payload)
     }
@@ -130,7 +130,10 @@ public final class InformBureau {
         }
         
         func logSub(_ logMessage: SubscriptionLogMessage, mergeLevel: Int = 0) {
-            let mergeInset: String = (0 ..< mergeLevel).reduce("", { $0.0 + "   " })
+            var mergeInset = ""
+            (0 ..< mergeLevel).forEach { (_) in
+                mergeInset += "   "
+            }
             let mark = "(S) " + mergeInset
             func mprint(_ item: String) {
                 print(mark + item)

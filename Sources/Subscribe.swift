@@ -296,7 +296,7 @@ public extension Subscribe {
     
     static func empty() -> Subscribe<Event> {
         let payload = ProxyPayload.empty.adding(entry: .publisherLabel(ProxyPayload.Entry.emptyProxyLabel, type: Subscribe<Event>.self))
-        return Subscribe<Event>(subscribe: { _ in },
+        return Subscribe<Event>(subscribe: { _,_  in },
                                      unsubscribe: { _ in },
                                      payload: payload)
     }
