@@ -109,9 +109,9 @@ public final class InformBureau {
         private init() { }
         
         public static func enable() {
-            guard InformBureau.isEnabled else {
-                print("Enable Alba.InformBureau first")
-                return
+            if !InformBureau.isEnabled {
+                print("Enabling Alba.InformBureau...")
+                InformBureau.isEnabled = true
             }
             InformBureau.didSubscribe.subscribe(shared, with: Logger.logSubMergeLevelZero)
             InformBureau.didPublish.subscribe(shared, with: Logger.logPub)
