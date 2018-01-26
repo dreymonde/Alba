@@ -43,8 +43,7 @@ public protocol PublisherProtocol : Subscribable {
 public extension PublisherProtocol {
     
     var proxy: Subscribe<Event> {
-        return Subscribe(subscribe: { self.subscribers[$0] = $1 },
-                              unsubscribe: { self.subscribers[$0] = nil })
+        fatalError()
     }
     
 }
@@ -67,9 +66,9 @@ public class Publisher<Event> : PublisherProtocol {
         self.proxy = Subscribe.empty()
         let initialPayload = ProxyPayload.empty.adding(entry: .publisherLabel(label, type: Publisher<Event>.self))
         self.label = label
-        self.proxy = Subscribe(subscribe: { self.subscribers[$0] = $1 },
-                                    unsubscribe: { self.subscribers[$0] = nil },
-                                    payload: initialPayload)
+        self.proxy = Subscribe(subscribe: { [weak self] in self?.subscribers[$0] = $1 },
+                               unsubscribe: { [weak self] in self?.subscribers[$0] = nil },
+                               payload: initialPayload)
     }
     
     public private(set) var proxy: Subscribe<Event>
