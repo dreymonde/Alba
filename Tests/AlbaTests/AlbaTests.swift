@@ -232,19 +232,6 @@ class AlbaTests: XCTestCase {
         waitForExpectations(timeout: 5.0)
     }
     
-    func testObservable() {
-        var obsInt = Observable(5)
-        let expectation = self.expectation(description: "onsub")
-        var str = ""
-        obsInt.proxy.listen { (int) in
-            str.append(String(int))
-            if int == 10 { expectation.fulfill() }
-        }
-        [1, 2, 3, 4, -4, 100, 10].forEach({ obsInt.value = $0 })
-        waitForExpectations(timeout: 5.0)
-        XCTAssertEqual(str, "1234-410010")
-    }
-    
     func testRedirect() {
         let pubOne = Publisher<Int>()
         let pubTwo = Publisher<String>(label: "testRedirect.pubTwo")
