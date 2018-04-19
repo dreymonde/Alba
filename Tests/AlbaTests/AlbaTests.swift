@@ -374,4 +374,28 @@ class AlbaTests: XCTestCase {
         publisher.publish("15")
     }
     
+    class VoidTest {
+        
+        var tested = false
+        
+        init() { }
+        
+        func sub(sub: Subscribe<Void>) {
+            sub.subscribe(self, with: VoidTest.test)
+        }
+        
+        func test() {
+            tested = true
+        }
+        
+    }
+    
+    func testVoid() {
+        let pub = Publisher<Void>()
+        let voidTest = VoidTest()
+        voidTest.sub(sub: pub.proxy)
+        pub.publish()
+        XCTAssertTrue(voidTest.tested)
+    }
+    
 }
