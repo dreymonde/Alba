@@ -238,7 +238,7 @@ public struct ManualSubscribe<Event> {
 
 public extension Subscribe where Event : SignedProtocol {
     
-    public func subscribe<Object : AnyObject>(_ object: Object,
+    func subscribe<Object : AnyObject>(_ object: Object,
                           with producer: @escaping (Object) -> EventHandler<(Event.Wrapped, submitterIdentifier: ObjectIdentifier?)>) {
         let identifier = ObjectIdentifier(object)
         self._subscribe(identifier, { [weak object] event in
@@ -251,7 +251,7 @@ public extension Subscribe where Event : SignedProtocol {
         })
     }
     
-    public func subscribe<Object : AnyObject>(_ object: Object,
+    func subscribe<Object : AnyObject>(_ object: Object,
                           with producer: @escaping (Object) -> EventHandler<(Event.Wrapped, submittedBySelf: Bool)>) {
         let identifier = ObjectIdentifier(object)
         self._subscribe(identifier, { [weak object] event in
